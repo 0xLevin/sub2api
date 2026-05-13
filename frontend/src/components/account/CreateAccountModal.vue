@@ -2070,6 +2070,44 @@
           </p>
         </div>
 
+        <!-- Usage Percent Limit -->
+        <div class="rounded-lg border border-gray-200 p-4 dark:border-dark-600">
+          <div class="mb-3 flex items-center justify-between">
+            <div>
+              <label class="input-label mb-0">{{ t('admin.accounts.quotaControl.usagePercent.label') }}</label>
+              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                {{ t('admin.accounts.quotaControl.usagePercent.hint') }}
+              </p>
+            </div>
+            <button
+              type="button"
+              @click="usagePercentLimitEnabled = !usagePercentLimitEnabled"
+              :class="[
+                'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
+                usagePercentLimitEnabled ? 'bg-primary-600' : 'bg-gray-200 dark:bg-dark-600'
+              ]"
+            >
+              <span
+                :class="[
+                  'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
+                  usagePercentLimitEnabled ? 'translate-x-5' : 'translate-x-0'
+                ]"
+              />
+            </button>
+          </div>
+          <div v-if="usagePercentLimitEnabled" class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="input-label">{{ t('admin.accounts.quotaControl.usagePercent.limit5h') }}</label>
+              <input v-model.number="usagePercentLimit5h" type="number" min="0" max="100" step="1" class="input" :placeholder="t('admin.accounts.quotaControl.usagePercent.placeholder')" />
+            </div>
+            <div>
+              <label class="input-label">{{ t('admin.accounts.quotaControl.usagePercent.limit7d') }}</label>
+              <input v-model.number="usagePercentLimit7d" type="number" min="0" max="100" step="1" class="input" :placeholder="t('admin.accounts.quotaControl.usagePercent.placeholder')" />
+            </div>
+          </div>
+          <p v-if="usagePercentLimitEnabled" class="input-hint mt-2">{{ t('admin.accounts.quotaControl.usagePercent.staleHint') }}</p>
+        </div>
+
         <!-- Window Cost Limit -->
         <div class="rounded-lg border border-gray-200 p-4 dark:border-dark-600">
           <div class="mb-3 flex items-center justify-between">
@@ -2577,6 +2615,49 @@
             <option value="enabled">{{ t('admin.accounts.anthropic.webSearchEnabled') }}</option>
             <option value="disabled">{{ t('admin.accounts.anthropic.webSearchDisabled') }}</option>
           </select>
+        </div>
+      </div>
+
+      <!-- OpenAI OAuth usage percent limit -->
+      <div
+        v-if="form.platform === 'openai' && accountCategory === 'oauth-based'"
+        class="border-t border-gray-200 pt-4 dark:border-dark-600"
+      >
+        <div class="rounded-lg border border-gray-200 p-4 dark:border-dark-600">
+          <div class="mb-3 flex items-center justify-between">
+            <div>
+              <label class="input-label mb-0">{{ t('admin.accounts.quotaControl.usagePercent.label') }}</label>
+              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                {{ t('admin.accounts.quotaControl.usagePercent.hint') }}
+              </p>
+            </div>
+            <button
+              type="button"
+              @click="usagePercentLimitEnabled = !usagePercentLimitEnabled"
+              :class="[
+                'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
+                usagePercentLimitEnabled ? 'bg-primary-600' : 'bg-gray-200 dark:bg-dark-600'
+              ]"
+            >
+              <span
+                :class="[
+                  'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
+                  usagePercentLimitEnabled ? 'translate-x-5' : 'translate-x-0'
+                ]"
+              />
+            </button>
+          </div>
+          <div v-if="usagePercentLimitEnabled" class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="input-label">{{ t('admin.accounts.quotaControl.usagePercent.limit5h') }}</label>
+              <input v-model.number="usagePercentLimit5h" type="number" min="0" max="100" step="1" class="input" :placeholder="t('admin.accounts.quotaControl.usagePercent.placeholder')" />
+            </div>
+            <div>
+              <label class="input-label">{{ t('admin.accounts.quotaControl.usagePercent.limit7d') }}</label>
+              <input v-model.number="usagePercentLimit7d" type="number" min="0" max="100" step="1" class="input" :placeholder="t('admin.accounts.quotaControl.usagePercent.placeholder')" />
+            </div>
+          </div>
+          <p v-if="usagePercentLimitEnabled" class="input-hint mt-2">{{ t('admin.accounts.quotaControl.usagePercent.staleHint') }}</p>
         </div>
       </div>
 
@@ -3361,6 +3442,9 @@ const showGeminiHelpDialog = ref(false)
 const windowCostEnabled = ref(false)
 const windowCostLimit = ref<number | null>(null)
 const windowCostStickyReserve = ref<number | null>(null)
+const usagePercentLimitEnabled = ref(false)
+const usagePercentLimit5h = ref<number | null>(null)
+const usagePercentLimit7d = ref<number | null>(null)
 const sessionLimitEnabled = ref(false)
 const maxSessions = ref<number | null>(null)
 const sessionIdleTimeout = ref<number | null>(null)
@@ -4051,6 +4135,9 @@ const resetForm = () => {
   windowCostEnabled.value = false
   windowCostLimit.value = null
   windowCostStickyReserve.value = null
+  usagePercentLimitEnabled.value = false
+  usagePercentLimit5h.value = null
+  usagePercentLimit7d.value = null
   sessionLimitEnabled.value = false
   maxSessions.value = null
   sessionIdleTimeout.value = null
@@ -4128,8 +4215,31 @@ const buildOpenAIExtra = (base?: Record<string, unknown>): Record<string, unknow
   } else {
     delete extra.openai_compact_mode
   }
+  if (accountCategory.value === 'oauth-based') {
+    applyUsagePercentLimitExtra(extra)
+  }
 
   return Object.keys(extra).length > 0 ? extra : undefined
+}
+
+const applyUsagePercentLimitExtra = (extra: Record<string, unknown>) => {
+  if (usagePercentLimitEnabled.value) {
+    const limit5h = usagePercentLimit5h.value
+    const limit7d = usagePercentLimit7d.value
+    if (limit5h != null && limit5h > 0) {
+      extra.usage_percent_limit_5h = Math.min(Math.max(limit5h, 0), 100)
+    } else {
+      delete extra.usage_percent_limit_5h
+    }
+    if (limit7d != null && limit7d > 0) {
+      extra.usage_percent_limit_7d = Math.min(Math.max(limit7d, 0), 100)
+    } else {
+      delete extra.usage_percent_limit_7d
+    }
+  } else {
+    delete extra.usage_percent_limit_5h
+    delete extra.usage_percent_limit_7d
+  }
 }
 
 const buildAnthropicExtra = (base?: Record<string, unknown>): Record<string, unknown> | undefined => {
@@ -5058,6 +5168,7 @@ const handleAnthropicExchange = async (authCode: string) => {
     // Build extra with quota control settings
     const baseExtra = oauth.buildExtraInfo(tokenInfo) || {}
     const extra: Record<string, unknown> = { ...baseExtra }
+    applyUsagePercentLimitExtra(extra)
 
     // Add window cost limit settings
     if (windowCostEnabled.value && windowCostLimit.value != null && windowCostLimit.value > 0) {
@@ -5181,6 +5292,7 @@ const handleCookieAuth = async (sessionKey: string) => {
         // Build extra with quota control settings
         const baseExtra = oauth.buildExtraInfo(tokenInfo) || {}
         const extra: Record<string, unknown> = { ...baseExtra }
+        applyUsagePercentLimitExtra(extra)
 
         // Add window cost limit settings
         if (windowCostEnabled.value && windowCostLimit.value != null && windowCostLimit.value > 0) {

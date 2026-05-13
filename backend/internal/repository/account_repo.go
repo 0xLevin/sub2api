@@ -64,6 +64,11 @@ var schedulerNeutralExtraKeys = map[string]struct{}{
 	"session_window_utilization": {},
 }
 
+var schedulerRelevantExtraKeys = map[string]struct{}{
+	"usage_percent_limit_5h": {},
+	"usage_percent_limit_7d": {},
+}
+
 // NewAccountRepository 创建账户仓储实例。
 // 这是对外暴露的构造函数，返回接口类型以便于依赖注入。
 func NewAccountRepository(client *dbent.Client, sqlDB *sql.DB, schedulerCache service.SchedulerCache) service.AccountRepository {
@@ -1339,6 +1344,9 @@ func shouldEnqueueSchedulerOutboxForExtraUpdates(updates map[string]any) bool {
 		return false
 	}
 	for key := range updates {
+		if _, ok := schedulerRelevantExtraKeys[key]; ok {
+			return true
+		}
 		if isSchedulerNeutralExtraKey(key) {
 			continue
 		}

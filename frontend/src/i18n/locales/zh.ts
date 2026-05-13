@@ -3402,6 +3402,14 @@ export default {
           stickyReservePlaceholder: '10',
           stickyReserveHint: '为粘性会话预留的额外额度'
         },
+        usagePercent: {
+          label: '用量百分比限制',
+          hint: '基于用量窗口的已用百分比限制新调度，达到阈值后仅允许粘性会话',
+          limit5h: '5h 已用阈值',
+          limit7d: '7d 已用阈值',
+          placeholder: '80',
+          staleHint: '用量来自被动采样；超过 6 小时未更新的旧值不会用于阻断调度。'
+        },
         sessionLimit: {
           label: '会话数量控制',
           hint: '限制同时活跃的会话数量',

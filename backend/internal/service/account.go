@@ -4,6 +4,7 @@ package service
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"hash/fnv"
 	"log/slog"
 	"reflect"
@@ -1378,6 +1379,8 @@ const (
 	WindowCostNotSchedulable
 )
 
+const usagePercentLimitFreshTTL = 6 * time.Hour
+
 // IsAnthropicOAuthOrSetupToken 判断是否为 Anthropic OAuth 或 SetupToken 类型账号
 // 仅这两类账号支持 5h 窗口额度控制和会话数量控制
 func (a *Account) IsAnthropicOAuthOrSetupToken() bool {
@@ -1983,6 +1986,145 @@ func (a *Account) GetWindowCostStickyReserve() float64 {
 		}
 	}
 	return 10.0
+}
+
+// GetUsagePercentLimit5h 获取 5h 用量百分比阈值（已用百分比，0 表示未启用）。
+func (a *Account) GetUsagePercentLimit5h() float64 {
+	return a.getUsagePercentLimit("usage_percent_limit_5h")
+}
+
+// GetUsagePercentLimit7d 获取 7d 用量百分比阈值（已用百分比，0 表示未启用）。
+func (a *Account) GetUsagePercentLimit7d() float64 {
+	return a.getUsagePercentLimit("usage_percent_limit_7d")
+}
+
+func (a *Account) getUsagePercentLimit(key string) float64 {
+	if a == nil || a.Extra == nil {
+		return 0
+	}
+	limit := parseExtraFloat64(a.Extra[key])
+	if limit <= 0 {
+		return 0
+	}
+	if limit > 100 {
+		return 100
+	}
+	return limit
+}
+
+// CheckUsagePercentSchedulability returns StickyOnly when a fresh 5h/7d usage
+// snapshot reaches the configured used-percent threshold. Stale snapshots fail open.
+func (a *Account) CheckUsagePercentSchedulability(now time.Time) WindowCostSchedulability {
+	if a == nil || a.Extra == nil {
+		return WindowCostSchedulable
+	}
+	if a.GetUsagePercentLimit5h() <= 0 && a.GetUsagePercentLimit7d() <= 0 {
+		return WindowCostSchedulable
+	}
+	if now.IsZero() {
+		now = time.Now()
+	}
+
+	switch {
+	case a.IsOpenAIOAuth():
+		return a.checkOpenAIUsagePercentSchedulability(now)
+	case a.IsAnthropicOAuthOrSetupToken():
+		return a.checkAnthropicUsagePercentSchedulability(now)
+	default:
+		return WindowCostSchedulable
+	}
+}
+
+func (a *Account) checkOpenAIUsagePercentSchedulability(now time.Time) WindowCostSchedulability {
+	updatedAt, ok := a.getExtraTimeOK("codex_usage_updated_at")
+	if !ok || now.Sub(updatedAt) > usagePercentLimitFreshTTL {
+		return WindowCostSchedulable
+	}
+	if limit := a.GetUsagePercentLimit5h(); limit > 0 {
+		used := a.windowUsagePercent(now, "codex_5h_used_percent", "codex_5h_reset_at")
+		if used >= limit {
+			return WindowCostStickyOnly
+		}
+	}
+	if limit := a.GetUsagePercentLimit7d(); limit > 0 {
+		used := a.windowUsagePercent(now, "codex_7d_used_percent", "codex_7d_reset_at")
+		if used >= limit {
+			return WindowCostStickyOnly
+		}
+	}
+	return WindowCostSchedulable
+}
+
+func (a *Account) checkAnthropicUsagePercentSchedulability(now time.Time) WindowCostSchedulability {
+	updatedAt, ok := a.getExtraTimeOK("passive_usage_sampled_at")
+	if !ok || now.Sub(updatedAt) > usagePercentLimitFreshTTL {
+		return WindowCostSchedulable
+	}
+	if limit := a.GetUsagePercentLimit5h(); limit > 0 {
+		expired := a.SessionWindowEnd != nil && !now.Before(*a.SessionWindowEnd)
+		if used := parseExtraFloat64(a.Extra["session_window_utilization"]) * 100; !expired && used >= limit {
+			return WindowCostStickyOnly
+		}
+	}
+	if limit := a.GetUsagePercentLimit7d(); limit > 0 {
+		expired := false
+		if resetUnix := parseExtraFloat64(a.Extra["passive_usage_7d_reset"]); resetUnix > 0 && !now.Before(time.Unix(int64(resetUnix), 0)) {
+			expired = true
+		}
+		if used := parseExtraFloat64(a.Extra["passive_usage_7d_utilization"]) * 100; !expired && used >= limit {
+			return WindowCostStickyOnly
+		}
+	}
+	return WindowCostSchedulable
+}
+
+func (a *Account) windowUsagePercent(now time.Time, usedKey, resetAtKey string) float64 {
+	if resetAt, ok := a.getExtraTimeOK(resetAtKey); ok && !now.Before(resetAt) {
+		return 0
+	}
+	return parseExtraFloat64(a.Extra[usedKey])
+}
+
+func (a *Account) getExtraTimeOK(key string) (time.Time, bool) {
+	if a == nil || a.Extra == nil {
+		return time.Time{}, false
+	}
+	raw, ok := a.Extra[key]
+	if !ok {
+		return time.Time{}, false
+	}
+	switch v := raw.(type) {
+	case time.Time:
+		return v, true
+	case string:
+		if t, err := parseExtraTimeString(v); err == nil {
+			return t, true
+		}
+	default:
+		if t, err := parseExtraTimeString(strings.TrimSpace(strings.Trim(fmt.Sprint(v), "\""))); err == nil {
+			return t, true
+		}
+	}
+	return time.Time{}, false
+}
+
+func parseExtraTimeString(s string) (time.Time, error) {
+	s = strings.TrimSpace(s)
+	if s == "" {
+		return time.Time{}, errors.New("empty time")
+	}
+	formats := []string{
+		time.RFC3339,
+		time.RFC3339Nano,
+		"2006-01-02T15:04:05Z",
+		"2006-01-02T15:04:05.000Z",
+	}
+	for _, format := range formats {
+		if t, err := time.Parse(format, s); err == nil {
+			return t, nil
+		}
+	}
+	return time.Time{}, fmt.Errorf("unable to parse time: %s", s)
 }
 
 // GetMaxSessions 获取最大并发会话数

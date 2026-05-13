@@ -285,6 +285,14 @@ func AccountFromServiceShallow(a *service.Account) *Account {
 			}
 		}
 	}
+	if a.IsOpenAIOAuth() || a.IsAnthropicOAuthOrSetupToken() {
+		if limit := a.GetUsagePercentLimit5h(); limit > 0 {
+			out.UsagePercentLimit5h = &limit
+		}
+		if limit := a.GetUsagePercentLimit7d(); limit > 0 {
+			out.UsagePercentLimit7d = &limit
+		}
+	}
 
 	// 提取账号配额限制（apikey / bedrock 类型有效）
 	if a.IsAPIKeyOrBedrock() {

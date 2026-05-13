@@ -835,6 +835,10 @@ export interface Account {
   window_cost_limit?: number | null
   window_cost_sticky_reserve?: number | null
 
+  // 用量百分比调度限制（OpenAI OAuth、Anthropic OAuth/SetupToken）
+  usage_percent_limit_5h?: number | null
+  usage_percent_limit_7d?: number | null
+
   // 会话数量控制（仅 Anthropic OAuth/SetupToken 账号有效）
   max_sessions?: number | null
   session_idle_timeout_minutes?: number | null
