@@ -137,6 +137,27 @@ docker build -t your-image-name .
 - `product-edition` 包含上游最新代码和自己的私有功能
 - 打包镜像需要包含自己的私有功能，所以应从 `product-edition` 构建
 
+## GitHub Actions
+
+当前 fork 保留 CI 和安全扫描，用来发现同步上游或自定义修改带来的问题。
+
+上游专用的 CLA 和 Release workflow 已加仓库限制，只会在 `Wei-Shaw/sub2api` 执行。这样 fork 中不会因为缺少上游密钥、CLA 分支或发布权限而误跑失败。
+
+fork 自己的镜像由 `Fork Image` workflow 构建：
+
+- 推送 `product-edition` 分支时自动构建并推送 DockerHub 镜像
+- 也可以在 GitHub Actions 页面手动运行，填写 `image_tag` 生成额外 tag
+- 需要在 fork 仓库配置 `DOCKERHUB_USERNAME` 和 `DOCKERHUB_TOKEN` 两个 secrets
+- 默认镜像地址为 `<DOCKERHUB_USERNAME>/sub2api`
+- 默认 tag 包含 `product-edition` 和 `product-edition-<short-sha>`
+- 手动运行时可勾选 `push_latest`，额外推送 `latest`
+
+使用镜像示例：
+
+```bash
+docker pull <DOCKERHUB_USERNAME>/sub2api:product-edition
+```
+
 ## 不推荐的做法
 
 不推荐把 `product-edition` 合并回 `main`：
