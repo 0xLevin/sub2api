@@ -51,6 +51,15 @@
       <span v-if="shouldShowResetTime" class="shrink-0 text-[10px] text-gray-400">
         {{ formatResetTime }}
       </span>
+
+      <!-- Scheduling threshold -->
+      <span
+        v-if="usageLimitPercent != null"
+        class="shrink-0 rounded bg-amber-50 px-1 py-0.5 text-[9px] font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-300"
+        :title="t('admin.accounts.usageWindow.usageLimitTitle')"
+      >
+        {{ t('admin.accounts.usageWindow.usageLimitShort') }} {{ usageLimitPercent }}%
+      </span>
     </div>
   </div>
 </template>
@@ -69,6 +78,7 @@ const props = defineProps<{
   color: 'indigo' | 'emerald' | 'purple' | 'amber'
   windowStats?: WindowStats | null
   showNowWhenIdle?: boolean
+  usageLimitPercent?: number | null
 }>()
 
 const { t } = useI18n()

@@ -47,6 +47,7 @@
           :utilization="usageInfo.five_hour.utilization"
           :resets-at="usageInfo.five_hour.resets_at"
           :window-stats="usageInfo.five_hour.window_stats"
+          :usage-limit-percent="usageLimit5h"
           color="indigo"
         />
 
@@ -56,6 +57,7 @@
           label="7d"
           :utilization="usageInfo.seven_day.utilization"
           :resets-at="usageInfo.seven_day.resets_at"
+          :usage-limit-percent="usageLimit7d"
           color="emerald"
         />
 
@@ -115,6 +117,7 @@
           :resets-at="usageInfo.five_hour.resets_at"
           :window-stats="usageInfo.five_hour.window_stats"
           :show-now-when-idle="true"
+          :usage-limit-percent="usageLimit5h"
           color="indigo"
         />
         <UsageProgressBar
@@ -124,6 +127,7 @@
           :resets-at="usageInfo.seven_day.resets_at"
           :window-stats="usageInfo.seven_day.window_stats"
           :show-now-when-idle="true"
+          :usage-limit-percent="usageLimit7d"
           color="emerald"
         />
       </div>
@@ -564,6 +568,14 @@ const hasOpenAIUsageFallback = computed(() => {
 })
 
 const openAIUsageRefreshKey = computed(() => buildOpenAIUsageRefreshKey(props.account))
+
+const normalizeUsageLimit = (value: number | null | undefined) => {
+  if (value == null || !Number.isFinite(value) || value <= 0) return null
+  return Math.round(Math.min(Math.max(value, 0), 100))
+}
+
+const usageLimit5h = computed(() => normalizeUsageLimit(props.account.usage_percent_limit_5h))
+const usageLimit7d = computed(() => normalizeUsageLimit(props.account.usage_percent_limit_7d))
 
 const shouldAutoLoadUsageOnMount = computed(() => {
   return shouldFetchUsage.value
@@ -1188,7 +1200,9 @@ watch(openAIUsageRefreshKey, (nextKey, prevKey) => {
   if (!prevKey || nextKey === prevKey) return
   if (props.account.platform !== 'openai' || props.account.type !== 'oauth') return
 
-  requestAutoLoad()
+  loadUsage({ bypassCache: true }).catch((e) => {
+    console.error('Failed to refresh OpenAI usage after row update:', e)
+  })
 })
 
 watch(

@@ -3806,7 +3806,9 @@ export default {
         gemini3Image: 'G31FI',
         claude: 'Claude',
         passiveSampled: 'Passive',
-        activeQuery: 'Query'
+        activeQuery: 'Query',
+        usageLimitShort: 'limit',
+        usageLimitTitle: 'New scheduling is skipped at this used-percent threshold; sticky sessions remain allowed.'
       },
       tier: {
         free: 'Free',

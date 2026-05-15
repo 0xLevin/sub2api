@@ -3132,7 +3132,9 @@ export default {
         gemini3Image: 'G31FI',
         claude: 'Claude',
         passiveSampled: '被动采样',
-        activeQuery: '查询'
+        activeQuery: '查询',
+        usageLimitShort: '限',
+        usageLimitTitle: '达到该已用百分比阈值后跳过新调度，粘性会话仍允许。'
       },
       tier: {
         free: 'Free',
