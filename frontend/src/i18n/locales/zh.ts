@@ -6333,8 +6333,12 @@ export default {
   version: {
     currentVersion: '当前版本',
     latestVersion: '最新版本',
+    targetForkVersion: '建议 fork 版本',
     upToDate: '已是最新版本',
     updateAvailable: '有新版本可用！',
+    upstreamUpdateAvailable: '上游有新版本',
+    customBuild: '自定义 fork 构建',
+    customBuildHint: '已禁用上游二进制自动更新。请将上游代码同步到自定义分支后重新构建镜像。',
     releaseNotes: '更新日志',
     noReleaseNotes: '暂无更新日志',
     viewUpdate: '查看更新',

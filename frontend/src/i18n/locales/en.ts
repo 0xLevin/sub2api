@@ -6173,8 +6173,12 @@ export default {
   version: {
     currentVersion: 'Current Version',
     latestVersion: 'Latest Version',
+    targetForkVersion: 'Target Fork Version',
     upToDate: "You're running the latest version.",
     updateAvailable: 'A new version is available!',
+    upstreamUpdateAvailable: 'Upstream update available',
+    customBuild: 'Custom fork build',
+    customBuildHint: 'Automatic upstream binary updates are disabled. Sync upstream into the custom branch and rebuild the image.',
     releaseNotes: 'Release Notes',
     noReleaseNotes: 'No release notes',
     viewUpdate: 'View Update',

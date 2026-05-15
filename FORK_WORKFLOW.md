@@ -158,6 +158,60 @@ fork 自己的镜像由 `Fork Image` workflow 构建：
 docker pull <DOCKERHUB_USERNAME>/sub2api:product-edition
 ```
 
+## 版本号规则
+
+当前 fork 使用“上游版本 + 自定义版本”的版本号：
+
+- 上游版本来自 `backend/cmd/server/VERSION`
+- 自定义版本来自 `backend/cmd/server/FORK_VERSION`
+- 最终应用版本形如 `0.1.126-product.1`
+
+同步上游后，如果上游修改了 `backend/cmd/server/VERSION`，最终版本会自动变成新的上游版本加当前自定义版本。例如上游更新到 `0.1.127` 后，当前 fork 构建版本会变成 `0.1.127-product.1`。
+
+当自己的私有功能发生需要区分生产镜像的改动时，递增 `backend/cmd/server/FORK_VERSION`：
+
+```bash
+# 例如 product.1 -> product.2
+vim backend/cmd/server/FORK_VERSION
+git add backend/cmd/server/FORK_VERSION
+git commit -m "chore: bump fork version"
+git push
+```
+
+`Fork Image` workflow 会使用这个版本号：
+
+- 应用内显示版本：`0.1.126-product.1`
+- Docker tag：`<DOCKERHUB_USERNAME>/sub2api:0.1.126-product.1`
+- 同时仍保留 `product-edition` 和 `product-edition-<short-sha>` tag
+
+## 更新检测
+
+原版会在后台检查 `Wei-Shaw/sub2api` 的最新 release，并支持直接下载上游二进制进行更新。当前 fork 包含私有改动，不能直接套用这个方式，否则可能把自定义功能替换成上游原版。
+
+当前策略：
+
+- 后台仍会检查上游最新版本，方便知道是否需要同步上游
+- 自定义 fork 构建不会显示“一键更新”按钮
+- 自定义 fork 构建调用自动更新接口会被拒绝
+- 正确更新方式是先同步上游到 `main`，再把 `main` 合入 `product-edition`，最后重新构建/拉取 fork 镜像
+
+生产环境推荐更新流程：
+
+```bash
+git checkout main
+git fetch upstream
+git merge upstream/main
+git push origin main
+
+git checkout product-edition
+git merge main
+git push
+
+# 等待 Fork Image workflow 构建完成后，在生产环境拉取新镜像
+docker compose pull sub2api
+docker compose up -d sub2api
+```
+
 ## 不推荐的做法
 
 不推荐把 `product-edition` 合并回 `main`：

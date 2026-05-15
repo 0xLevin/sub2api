@@ -6,11 +6,11 @@
         @click="toggleDropdown"
         class="flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs transition-colors"
         :class="[
-          hasUpdate
+          hasUpdate || customBuildHasUpstreamUpdate
             ? 'bg-amber-100 text-amber-700 hover:bg-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:hover:bg-amber-900/50'
             : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-dark-800 dark:text-dark-400 dark:hover:bg-dark-700'
         ]"
-        :title="hasUpdate ? t('version.updateAvailable') : t('version.upToDate')"
+        :title="versionButtonTitle"
       >
         <span v-if="currentVersion" class="font-medium">v{{ currentVersion }}</span>
         <span
@@ -18,7 +18,7 @@
           class="h-3 w-12 animate-pulse rounded bg-gray-200 font-medium dark:bg-dark-600"
         ></span>
         <!-- Update indicator -->
-        <span v-if="hasUpdate" class="relative flex h-2 w-2">
+        <span v-if="hasUpdate || customBuildHasUpstreamUpdate" class="relative flex h-2 w-2">
           <span
             class="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75"
           ></span>
@@ -88,7 +88,7 @@
                   <span v-else class="text-2xl font-bold text-gray-400 dark:text-dark-500">--</span>
                   <!-- Show check mark when up to date -->
                   <span
-                    v-if="!hasUpdate"
+                    v-if="!hasUpdate && !customBuildHasUpstreamUpdate"
                     class="flex h-5 w-5 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30"
                   >
                     <svg
@@ -106,7 +106,9 @@
                 </div>
                 <p class="mt-1 text-xs text-gray-500 dark:text-dark-400">
                   {{
-                    hasUpdate
+                    customBuildHasUpstreamUpdate
+                      ? t('version.targetForkVersion') + ': v' + latestVersion
+                      : hasUpdate
                       ? t('version.latestVersion') + ': v' + latestVersion
                       : t('version.upToDate')
                   }}
@@ -226,7 +228,60 @@
                 </button>
               </div>
 
-              <!-- Priority 3: Update available for source build - show git pull hint -->
+              <!-- Priority 3: Custom fork build - upstream updates require branch sync + image rebuild -->
+              <div v-else-if="customBuild" class="space-y-2">
+                <a
+                  v-if="releaseInfo?.html_url && releaseInfo.html_url !== '#'"
+                  :href="releaseInfo.html_url"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="group flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3 transition-colors hover:bg-amber-100 dark:border-amber-800/50 dark:bg-amber-900/20 dark:hover:bg-amber-900/30"
+                >
+                  <div
+                    class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/50"
+                  >
+                    <Icon
+                      name="sync"
+                      size="sm"
+                      :stroke-width="2"
+                      class="text-amber-600 dark:text-amber-400"
+                    />
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <p class="text-sm font-medium text-amber-700 dark:text-amber-300">
+                      {{
+                        customBuildHasUpstreamUpdate
+                          ? t('version.upstreamUpdateAvailable')
+                          : t('version.customBuild')
+                      }}
+                    </p>
+                    <p class="text-xs text-amber-600/70 dark:text-amber-400/70">
+                      {{ t('version.targetForkVersion') }}: v{{ latestVersion }}
+                    </p>
+                  </div>
+                  <Icon
+                    name="externalLink"
+                    size="xs"
+                    :stroke-width="2"
+                    class="text-amber-500 dark:text-amber-400"
+                  />
+                </a>
+                <div
+                  class="flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 p-2 dark:border-blue-800/50 dark:bg-blue-900/20"
+                >
+                  <Icon
+                    name="infoCircle"
+                    size="xs"
+                    :stroke-width="2"
+                    class="flex-shrink-0 text-blue-500 dark:text-blue-400"
+                  />
+                  <p class="text-xs text-blue-600 dark:text-blue-400">
+                    {{ t('version.customBuildHint') }}
+                  </p>
+                </div>
+              </div>
+
+              <!-- Priority 4: Update available for source build - show git pull hint -->
               <div v-else-if="hasUpdate && !isReleaseBuild" class="space-y-2">
                 <a
                   v-if="releaseInfo?.html_url && releaseInfo.html_url !== '#'"
@@ -286,7 +341,7 @@
                 </div>
               </div>
 
-              <!-- Priority 4: Update available for release build - show update button -->
+              <!-- Priority 5: Update available for release build - show update button -->
               <div v-else-if="hasUpdate && isReleaseBuild" class="space-y-2">
                 <!-- Update info card -->
                 <div
@@ -350,7 +405,7 @@
                 </a>
               </div>
 
-              <!-- Priority 5: Up to date - show GitHub link -->
+              <!-- Priority 6: Up to date - show GitHub link -->
               <a
                 v-else-if="releaseInfo?.html_url && releaseInfo.html_url !== '#'"
                 :href="releaseInfo.html_url"
@@ -408,6 +463,16 @@ const latestVersion = computed(() => appStore.latestVersion)
 const hasUpdate = computed(() => appStore.hasUpdate)
 const releaseInfo = computed(() => appStore.releaseInfo)
 const buildType = computed(() => appStore.buildType)
+const customBuild = computed(() => appStore.customBuild)
+const customBuildHasUpstreamUpdate = computed(
+  () => customBuild.value && appStore.upstreamUpdateAvailable
+)
+const versionButtonTitle = computed(() => {
+  if (hasUpdate.value) return t('version.updateAvailable')
+  if (customBuildHasUpstreamUpdate.value) return t('version.upstreamUpdateAvailable')
+  if (customBuild.value) return t('version.customBuild')
+  return t('version.upToDate')
+})
 
 // Update process states (local to this component)
 const updating = ref(false)

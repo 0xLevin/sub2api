@@ -40,6 +40,10 @@ export const useAppStore = defineStore('app', () => {
   const latestVersion = ref<string>('')
   const hasUpdate = ref<boolean>(false)
   const buildType = ref<string>('source')
+  const updateMode = ref<string>('upstream')
+  const customBuild = ref<boolean>(false)
+  const upstreamUpdateAvailable = ref<boolean>(false)
+  const versionWarning = ref<string>('')
   const releaseInfo = ref<ReleaseInfo | null>(null)
 
   // Auto-incrementing ID for toasts
@@ -246,6 +250,10 @@ export const useAppStore = defineStore('app', () => {
         latest_version: latestVersion.value,
         has_update: hasUpdate.value,
         build_type: buildType.value,
+        update_mode: updateMode.value as 'upstream' | 'fork',
+        custom_build: customBuild.value,
+        upstream_update_available: upstreamUpdateAvailable.value,
+        warning: versionWarning.value || undefined,
         release_info: releaseInfo.value || undefined,
         cached: true
       }
@@ -263,6 +271,10 @@ export const useAppStore = defineStore('app', () => {
       latestVersion.value = data.latest_version
       hasUpdate.value = data.has_update
       buildType.value = data.build_type || 'source'
+      updateMode.value = data.update_mode || 'upstream'
+      customBuild.value = data.custom_build === true
+      upstreamUpdateAvailable.value = data.upstream_update_available === true
+      versionWarning.value = data.warning || ''
       releaseInfo.value = data.release_info || null
       versionLoaded.value = true
       return data
@@ -280,6 +292,8 @@ export const useAppStore = defineStore('app', () => {
   function clearVersionCache(): void {
     versionLoaded.value = false
     hasUpdate.value = false
+    upstreamUpdateAvailable.value = false
+    versionWarning.value = ''
   }
 
   // ==================== Public Settings Management ====================
@@ -427,6 +441,10 @@ export const useAppStore = defineStore('app', () => {
     latestVersion,
     hasUpdate,
     buildType,
+    updateMode,
+    customBuild,
+    upstreamUpdateAvailable,
+    versionWarning,
     releaseInfo,
 
     // Computed

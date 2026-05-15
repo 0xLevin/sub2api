@@ -24,6 +24,9 @@ const (
 	updateCacheTTL = 1200 // 20 minutes
 	githubRepo     = "Wei-Shaw/sub2api"
 
+	updateModeUpstream = "upstream"
+	updateModeFork     = "fork"
+
 	// Security: allowed download domains for updates
 	allowedDownloadHost = "github.com"
 	allowedAssetHost    = "objects.githubusercontent.com"
@@ -65,13 +68,16 @@ func NewUpdateService(cache UpdateCache, githubClient GitHubReleaseClient, versi
 
 // UpdateInfo contains update information
 type UpdateInfo struct {
-	CurrentVersion string       `json:"current_version"`
-	LatestVersion  string       `json:"latest_version"`
-	HasUpdate      bool         `json:"has_update"`
-	ReleaseInfo    *ReleaseInfo `json:"release_info,omitempty"`
-	Cached         bool         `json:"cached"`
-	Warning        string       `json:"warning,omitempty"`
-	BuildType      string       `json:"build_type"` // "source" or "release"
+	CurrentVersion          string       `json:"current_version"`
+	LatestVersion           string       `json:"latest_version"`
+	HasUpdate               bool         `json:"has_update"`
+	ReleaseInfo             *ReleaseInfo `json:"release_info,omitempty"`
+	Cached                  bool         `json:"cached"`
+	Warning                 string       `json:"warning,omitempty"`
+	BuildType               string       `json:"build_type"`  // "source" or "release"
+	UpdateMode              string       `json:"update_mode"` // "upstream" or "fork"
+	CustomBuild             bool         `json:"custom_build"`
+	UpstreamUpdateAvailable bool         `json:"upstream_update_available"`
 }
 
 // ReleaseInfo contains GitHub release details
@@ -125,10 +131,12 @@ func (s *UpdateService) CheckUpdate(ctx context.Context, force bool) (*UpdateInf
 		}
 		return &UpdateInfo{
 			CurrentVersion: s.currentVersion,
-			LatestVersion:  s.currentVersion,
+			LatestVersion:  displayLatestVersion(s.currentVersion, s.currentVersion),
 			HasUpdate:      false,
 			Warning:        err.Error(),
 			BuildType:      s.buildType,
+			UpdateMode:     s.updateMode(),
+			CustomBuild:    s.isCustomBuild(),
 		}, nil
 	}
 
@@ -140,6 +148,10 @@ func (s *UpdateService) CheckUpdate(ctx context.Context, force bool) (*UpdateInf
 // PerformUpdate downloads and applies the update
 // Uses atomic file replacement pattern for safe in-place updates
 func (s *UpdateService) PerformUpdate(ctx context.Context) error {
+	if s.isCustomBuild() {
+		return fmt.Errorf("automatic upstream binary update is disabled for custom fork builds; sync upstream into the custom branch and rebuild the image instead")
+	}
+
 	info, err := s.CheckUpdate(ctx, true)
 	if err != nil {
 		return err
@@ -290,20 +302,36 @@ func (s *UpdateService) fetchLatestRelease(ctx context.Context) (*UpdateInfo, er
 		}
 	}
 
+	return s.buildUpdateInfo(latestVersion, &ReleaseInfo{
+		Name:        release.Name,
+		Body:        release.Body,
+		PublishedAt: release.PublishedAt,
+		HTMLURL:     release.HTMLURL,
+		Assets:      assets,
+	}, false), nil
+}
+
+func (s *UpdateService) buildUpdateInfo(latestVersion string, releaseInfo *ReleaseInfo, cached bool) *UpdateInfo {
+	customBuild := s.isCustomBuild()
+	upstreamUpdateAvailable := compareVersions(baseVersion(s.currentVersion), latestVersion) < 0
+	hasUpdate := upstreamUpdateAvailable && !customBuild
+	warning := ""
+	if customBuild {
+		warning = "Custom fork build: upstream binary auto-update is disabled. Sync upstream into the custom branch and rebuild the image instead."
+	}
+
 	return &UpdateInfo{
-		CurrentVersion: s.currentVersion,
-		LatestVersion:  latestVersion,
-		HasUpdate:      compareVersions(s.currentVersion, latestVersion) < 0,
-		ReleaseInfo: &ReleaseInfo{
-			Name:        release.Name,
-			Body:        release.Body,
-			PublishedAt: release.PublishedAt,
-			HTMLURL:     release.HTMLURL,
-			Assets:      assets,
-		},
-		Cached:    false,
-		BuildType: s.buildType,
-	}, nil
+		CurrentVersion:          s.currentVersion,
+		LatestVersion:           displayLatestVersion(s.currentVersion, latestVersion),
+		HasUpdate:               hasUpdate,
+		ReleaseInfo:             releaseInfo,
+		Cached:                  cached,
+		Warning:                 warning,
+		BuildType:               s.buildType,
+		UpdateMode:              s.updateMode(),
+		CustomBuild:             customBuild,
+		UpstreamUpdateAvailable: upstreamUpdateAvailable,
+	}
 }
 
 func (s *UpdateService) downloadFile(ctx context.Context, downloadURL, dest string) error {
@@ -486,14 +514,7 @@ func (s *UpdateService) getFromCache(ctx context.Context) (*UpdateInfo, error) {
 		return nil, fmt.Errorf("cache expired")
 	}
 
-	return &UpdateInfo{
-		CurrentVersion: s.currentVersion,
-		LatestVersion:  cached.Latest,
-		HasUpdate:      compareVersions(s.currentVersion, cached.Latest) < 0,
-		ReleaseInfo:    cached.ReleaseInfo,
-		Cached:         true,
-		BuildType:      s.buildType,
-	}, nil
+	return s.buildUpdateInfo(cached.Latest, cached.ReleaseInfo, true), nil
 }
 
 func (s *UpdateService) saveToCache(ctx context.Context, info *UpdateInfo) {
@@ -502,7 +523,7 @@ func (s *UpdateService) saveToCache(ctx context.Context, info *UpdateInfo) {
 		ReleaseInfo *ReleaseInfo `json:"release_info"`
 		Timestamp   int64        `json:"timestamp"`
 	}{
-		Latest:      info.LatestVersion,
+		Latest:      baseVersion(info.LatestVersion),
 		ReleaseInfo: info.ReleaseInfo,
 		Timestamp:   time.Now().Unix(),
 	}
@@ -513,8 +534,8 @@ func (s *UpdateService) saveToCache(ctx context.Context, info *UpdateInfo) {
 
 // compareVersions compares two semantic versions
 func compareVersions(current, latest string) int {
-	currentParts := parseVersion(current)
-	latestParts := parseVersion(latest)
+	currentParts := parseVersion(baseVersion(current))
+	latestParts := parseVersion(baseVersion(latest))
 
 	for i := 0; i < 3; i++ {
 		if currentParts[i] < latestParts[i] {
@@ -529,12 +550,56 @@ func compareVersions(current, latest string) int {
 
 func parseVersion(v string) [3]int {
 	v = strings.TrimPrefix(v, "v")
+	v = baseVersion(v)
 	parts := strings.Split(v, ".")
 	result := [3]int{0, 0, 0}
 	for i := 0; i < len(parts) && i < 3; i++ {
-		if parsed, err := strconv.Atoi(parts[i]); err == nil {
+		if parsed, err := strconv.Atoi(leadingDigits(parts[i])); err == nil {
 			result[i] = parsed
 		}
 	}
 	return result
+}
+
+func (s *UpdateService) isCustomBuild() bool {
+	return customVersionSuffix(s.currentVersion) != ""
+}
+
+func (s *UpdateService) updateMode() string {
+	if s.isCustomBuild() {
+		return updateModeFork
+	}
+	return updateModeUpstream
+}
+
+func baseVersion(v string) string {
+	v = strings.TrimSpace(strings.TrimPrefix(v, "v"))
+	if idx := strings.IndexAny(v, "-+"); idx >= 0 {
+		return v[:idx]
+	}
+	return v
+}
+
+func customVersionSuffix(v string) string {
+	v = strings.TrimSpace(strings.TrimPrefix(v, "v"))
+	if idx := strings.IndexAny(v, "-+"); idx >= 0 && idx+1 < len(v) {
+		return v[idx+1:]
+	}
+	return ""
+}
+
+func displayLatestVersion(currentVersion, latestUpstreamVersion string) string {
+	if suffix := customVersionSuffix(currentVersion); suffix != "" {
+		return baseVersion(latestUpstreamVersion) + "-" + suffix
+	}
+	return latestUpstreamVersion
+}
+
+func leadingDigits(v string) string {
+	for i, r := range v {
+		if r < '0' || r > '9' {
+			return v[:i]
+		}
+	}
+	return v
 }

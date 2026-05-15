@@ -31,6 +31,9 @@ import (
 //go:embed VERSION
 var embeddedVersion string
 
+//go:embed FORK_VERSION
+var embeddedForkVersion string
+
 // Build-time variables (can be set by ldflags)
 var (
 	Version   = ""
@@ -46,10 +49,16 @@ func init() {
 	}
 
 	// 默认从 embedded VERSION 文件读取版本号（编译期打包进二进制）。
-	Version = strings.TrimSpace(embeddedVersion)
-	if Version == "" {
-		Version = "0.0.0-dev"
+	baseVersion := strings.TrimSpace(embeddedVersion)
+	if baseVersion == "" {
+		baseVersion = "0.0.0-dev"
 	}
+	forkVersion := strings.TrimSpace(embeddedForkVersion)
+	if forkVersion != "" {
+		Version = baseVersion + "-" + forkVersion
+		return
+	}
+	Version = baseVersion
 }
 
 // initLogger configures the default slog handler based on gin.Mode().

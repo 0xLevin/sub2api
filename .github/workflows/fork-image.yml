@@ -74,10 +74,18 @@ jobs:
           safe_ref="$(echo "${ref_name}" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9_.-]+/-/g; s/^-+|-+$//g')"
           commit_sha="$(git rev-parse HEAD)"
           short_sha="${commit_sha::12}"
+          base_version="$(tr -d '\r\n' < backend/cmd/server/VERSION)"
+          fork_version="$(tr -d '\r\n' < backend/cmd/server/FORK_VERSION 2>/dev/null || true)"
+          version="${base_version}"
+          if [ -n "${fork_version}" ]; then
+            version="${base_version}-${fork_version}"
+          fi
+          safe_version="$(echo "${version}" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9_.-]+/-/g; s/^-+|-+$//g')"
 
           {
             echo "tags<<EOF"
             echo "${image}:${safe_ref}"
+            echo "${image}:${safe_version}"
             echo "${image}:${safe_ref}-${short_sha}"
 
             extra_tag='${{ github.event.inputs.image_tag }}'
@@ -101,7 +109,6 @@ jobs:
           echo "platforms=${platforms}" >> "$GITHUB_OUTPUT"
 
           build_date="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-          version="custom-${safe_ref}-${short_sha}"
           echo "commit=${commit_sha}" >> "$GITHUB_OUTPUT"
           echo "date=${build_date}" >> "$GITHUB_OUTPUT"
           echo "version=${version}" >> "$GITHUB_OUTPUT"

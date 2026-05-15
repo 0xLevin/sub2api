@@ -36,7 +36,7 @@ RUN pnpm run build
 FROM ${GOLANG_IMAGE} AS backend-builder
 
 # Build arguments for version info (set by CI)
-ARG VERSION=docker
+ARG VERSION=
 ARG COMMIT=docker
 ARG DATE
 ARG GOPROXY
@@ -61,9 +61,16 @@ COPY backend/ ./
 COPY --from=frontend-builder /app/backend/internal/web/dist ./internal/web/dist
 
 # Build the binary (BuildType=release for CI builds, embed frontend)
-RUN CGO_ENABLED=0 GOOS=linux go build \
+RUN VERSION_VALUE="${VERSION}" && \
+    if [ -z "${VERSION_VALUE}" ]; then \
+      VERSION_VALUE="$(tr -d '\r\n' < ./cmd/server/VERSION)"; \
+      FORK_VERSION_VALUE="$(tr -d '\r\n' < ./cmd/server/FORK_VERSION 2>/dev/null || true)"; \
+      if [ -n "${FORK_VERSION_VALUE}" ]; then VERSION_VALUE="${VERSION_VALUE}-${FORK_VERSION_VALUE}"; fi; \
+    fi && \
+    DATE_VALUE="${DATE:-$(date -u +%Y-%m-%dT%H:%M:%SZ)}" && \
+    CGO_ENABLED=0 GOOS=linux go build \
     -tags embed \
-    -ldflags="-s -w -X main.Commit=${COMMIT} -X main.Date=${DATE:-$(date -u +%Y-%m-%dT%H:%M:%SZ)} -X main.BuildType=release" \
+    -ldflags="-s -w -X main.Version=${VERSION_VALUE} -X main.Commit=${COMMIT} -X main.Date=${DATE_VALUE} -X main.BuildType=release" \
     -o /app/sub2api \
     ./cmd/server
 
