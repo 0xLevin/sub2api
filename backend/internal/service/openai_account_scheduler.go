@@ -365,6 +365,7 @@ func (s *defaultOpenAIAccountScheduler) selectBySessionHash(
 		return nil, nil
 	}
 	if !s.service.isOpenAIAccountSchedulableForUsagePercent(account, true) {
+		_ = s.service.deleteStickySessionAccountID(ctx, req.GroupID, sessionHash)
 		return nil, nil
 	}
 

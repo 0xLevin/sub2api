@@ -27,7 +27,7 @@ func TestAccountCheckUsagePercentSchedulability(t *testing.T) {
 					"codex_5h_reset_at":      now.Add(time.Hour).Format(time.RFC3339),
 				},
 			},
-			want: WindowCostStickyOnly,
+			want: WindowCostNotSchedulable,
 		},
 		{
 			name: "openai stale usage fails open",
@@ -68,7 +68,7 @@ func TestAccountCheckUsagePercentSchedulability(t *testing.T) {
 					"session_window_utilization": 0.8,
 				},
 			},
-			want: WindowCostStickyOnly,
+			want: WindowCostNotSchedulable,
 		},
 		{
 			name: "anthropic expired 5h window fails open for that window",
@@ -96,7 +96,7 @@ func TestAccountCheckUsagePercentSchedulability(t *testing.T) {
 					"passive_usage_7d_reset":       now.Add(24 * time.Hour).Unix(),
 				},
 			},
-			want: WindowCostStickyOnly,
+			want: WindowCostNotSchedulable,
 		},
 		{
 			name: "anthropic expired 7d reset fails open for that window",

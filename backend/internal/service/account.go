@@ -2012,8 +2012,9 @@ func (a *Account) getUsagePercentLimit(key string) float64 {
 	return limit
 }
 
-// CheckUsagePercentSchedulability returns StickyOnly when a fresh 5h/7d usage
-// snapshot reaches the configured used-percent threshold. Stale snapshots fail open.
+// CheckUsagePercentSchedulability returns NotSchedulable when a fresh 5h/7d
+// usage snapshot reaches the configured used-percent threshold. Stale snapshots
+// fail open.
 func (a *Account) CheckUsagePercentSchedulability(now time.Time) WindowCostSchedulability {
 	if a == nil || a.Extra == nil {
 		return WindowCostSchedulable
@@ -2043,13 +2044,13 @@ func (a *Account) checkOpenAIUsagePercentSchedulability(now time.Time) WindowCos
 	if limit := a.GetUsagePercentLimit5h(); limit > 0 {
 		used := a.windowUsagePercent(now, "codex_5h_used_percent", "codex_5h_reset_at")
 		if used >= limit {
-			return WindowCostStickyOnly
+			return WindowCostNotSchedulable
 		}
 	}
 	if limit := a.GetUsagePercentLimit7d(); limit > 0 {
 		used := a.windowUsagePercent(now, "codex_7d_used_percent", "codex_7d_reset_at")
 		if used >= limit {
-			return WindowCostStickyOnly
+			return WindowCostNotSchedulable
 		}
 	}
 	return WindowCostSchedulable
@@ -2063,7 +2064,7 @@ func (a *Account) checkAnthropicUsagePercentSchedulability(now time.Time) Window
 	if limit := a.GetUsagePercentLimit5h(); limit > 0 {
 		expired := a.SessionWindowEnd != nil && !now.Before(*a.SessionWindowEnd)
 		if used := parseExtraFloat64(a.Extra["session_window_utilization"]) * 100; !expired && used >= limit {
-			return WindowCostStickyOnly
+			return WindowCostNotSchedulable
 		}
 	}
 	if limit := a.GetUsagePercentLimit7d(); limit > 0 {
@@ -2072,7 +2073,7 @@ func (a *Account) checkAnthropicUsagePercentSchedulability(now time.Time) Window
 			expired = true
 		}
 		if used := parseExtraFloat64(a.Extra["passive_usage_7d_utilization"]) * 100; !expired && used >= limit {
-			return WindowCostStickyOnly
+			return WindowCostNotSchedulable
 		}
 	}
 	return WindowCostSchedulable

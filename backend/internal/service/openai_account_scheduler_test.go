@@ -808,6 +808,79 @@ func TestOpenAIGatewayService_SelectAccountWithScheduler_SessionSticky_ForceHTTP
 	}
 }
 
+func TestOpenAIGatewayService_SelectAccountWithScheduler_StickyUsagePercentLimitClearsSession(t *testing.T) {
+	ctx := context.Background()
+	groupID := int64(1012)
+	now := time.Now()
+	accounts := []Account{
+		{
+			ID:          2301,
+			Platform:    PlatformOpenAI,
+			Type:        AccountTypeOAuth,
+			Status:      StatusActive,
+			Schedulable: true,
+			Concurrency: 1,
+			Priority:    0,
+			Extra: map[string]any{
+				"usage_percent_limit_5h": 80,
+				"codex_usage_updated_at": now.Add(-time.Minute).Format(time.RFC3339),
+				"codex_5h_used_percent":  80,
+				"codex_5h_reset_at":      now.Add(time.Hour).Format(time.RFC3339),
+			},
+		},
+		{
+			ID:          2302,
+			Platform:    PlatformOpenAI,
+			Type:        AccountTypeOAuth,
+			Status:      StatusActive,
+			Schedulable: true,
+			Concurrency: 1,
+			Priority:    1,
+			Extra: map[string]any{
+				"usage_percent_limit_5h": 80,
+				"codex_usage_updated_at": now.Add(-time.Minute).Format(time.RFC3339),
+				"codex_5h_used_percent":  10,
+				"codex_5h_reset_at":      now.Add(time.Hour).Format(time.RFC3339),
+			},
+		},
+	}
+	cache := &schedulerTestGatewayCache{
+		sessionBindings: map[string]int64{
+			"openai:session_hash_usage_percent": 2301,
+		},
+	}
+
+	svc := &OpenAIGatewayService{
+		accountRepo:        schedulerTestOpenAIAccountRepo{accounts: accounts},
+		cache:              cache,
+		cfg:                &config.Config{},
+		rateLimitService:   newOpenAIAdvancedSchedulerRateLimitService("true"),
+		concurrencyService: NewConcurrencyService(schedulerTestConcurrencyCache{}),
+	}
+
+	selection, decision, err := svc.SelectAccountWithScheduler(
+		ctx,
+		&groupID,
+		"",
+		"session_hash_usage_percent",
+		"gpt-5.1",
+		nil,
+		OpenAIUpstreamTransportAny,
+		false,
+	)
+	require.NoError(t, err)
+	require.NotNil(t, selection)
+	require.NotNil(t, selection.Account)
+	require.Equal(t, int64(2302), selection.Account.ID)
+	require.Equal(t, openAIAccountScheduleLayerLoadBalance, decision.Layer)
+	require.False(t, decision.StickySessionHit)
+	require.Equal(t, 1, cache.deletedSessions["openai:session_hash_usage_percent"])
+	require.Equal(t, int64(2302), cache.sessionBindings["openai:session_hash_usage_percent"])
+	if selection.ReleaseFunc != nil {
+		selection.ReleaseFunc()
+	}
+}
+
 func TestOpenAIGatewayService_SelectAccountWithScheduler_RequiredWSV2_SkipsStickyHTTPAccount(t *testing.T) {
 	ctx := context.Background()
 	groupID := int64(1011)
