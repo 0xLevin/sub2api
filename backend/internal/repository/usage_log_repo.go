@@ -6,7 +6,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -2085,6 +2087,291 @@ func (r *usageLogRepository) GetAccountWindowStatsBatch(ctx context.Context, acc
 	return result, nil
 }
 
+func (r *usageLogRepository) RecordOpenAICodexUsageSnapshot(ctx context.Context, accountID int64, snapshot *service.OpenAICodexUsageSnapshot) error {
+	if r == nil || r.sql == nil || accountID <= 0 || snapshot == nil {
+		return nil
+	}
+	normalized := snapshot.Normalize()
+	if normalized == nil {
+		return nil
+	}
+
+	sampledAt := time.Now()
+	if parsed, err := time.Parse(time.RFC3339, strings.TrimSpace(snapshot.UpdatedAt)); err == nil {
+		sampledAt = parsed
+	}
+
+	var reset5hAt, reset7dAt any
+	if normalized.Reset5hSeconds != nil {
+		reset5hAt = sampledAt.Add(time.Duration(*normalized.Reset5hSeconds) * time.Second)
+	}
+	if normalized.Reset7dSeconds != nil {
+		reset7dAt = sampledAt.Add(time.Duration(*normalized.Reset7dSeconds) * time.Second)
+	}
+
+	raw, err := json.Marshal(snapshot)
+	if err != nil {
+		raw = []byte(`{}`)
+	}
+
+	query := `
+		INSERT INTO openai_codex_usage_snapshots (
+			account_id,
+			sampled_at,
+			used_5h_percent,
+			reset_5h_at,
+			window_5h_minutes,
+			used_7d_percent,
+			reset_7d_at,
+			window_7d_minutes,
+			raw
+		)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9::jsonb)
+	`
+	_, err = r.sql.ExecContext(
+		ctx,
+		query,
+		accountID,
+		sampledAt,
+		nullFloat64(normalized.Used5hPercent),
+		reset5hAt,
+		nullInt(normalized.Window5hMinutes),
+		nullFloat64(normalized.Used7dPercent),
+		reset7dAt,
+		nullInt(normalized.Window7dMinutes),
+		string(raw),
+	)
+	return err
+}
+
+func (r *usageLogRepository) GetOpenAICodexCapacityStats(ctx context.Context, accountID int64, startTime, endTime time.Time) (*usagestats.OpenAICodexCapacityStats, error) {
+	result := &usagestats.OpenAICodexCapacityStats{Cycles: []usagestats.OpenAICodexUsageCycle{}}
+	if r == nil || r.sql == nil || accountID <= 0 {
+		return result, nil
+	}
+
+	query := `
+		WITH ordered AS (
+			SELECT
+				sampled_at,
+				used_7d_percent,
+				reset_7d_at,
+				LAG(used_7d_percent) OVER (ORDER BY sampled_at) AS prev_used_7d_percent,
+				LAG(reset_7d_at) OVER (ORDER BY sampled_at) AS prev_reset_7d_at
+			FROM openai_codex_usage_snapshots
+			WHERE account_id = $1
+				AND sampled_at >= $2
+				AND sampled_at < $3
+				AND reset_7d_at IS NOT NULL
+		),
+		marked AS (
+			SELECT
+				*,
+				CASE
+					WHEN prev_reset_7d_at IS NULL THEN 1
+					WHEN reset_7d_at <> prev_reset_7d_at THEN 1
+					WHEN used_7d_percent IS NOT NULL
+						AND prev_used_7d_percent IS NOT NULL
+						AND used_7d_percent + 5 < prev_used_7d_percent THEN 1
+					ELSE 0
+				END AS new_cycle
+			FROM ordered
+		),
+		grouped AS (
+			SELECT
+				*,
+				SUM(new_cycle) OVER (ORDER BY sampled_at ROWS UNBOUNDED PRECEDING) AS cycle_no
+			FROM marked
+		)
+		SELECT
+			MIN(sampled_at) AS start_time,
+			MAX(sampled_at) AS end_time,
+			MAX(reset_7d_at) AS reset_at,
+			COALESCE(MAX(used_7d_percent), 0) AS max_used_7d_percent,
+			COUNT(*) AS sample_count
+		FROM grouped
+		GROUP BY cycle_no
+		ORDER BY start_time DESC
+		LIMIT 12
+	`
+	rows, err := r.sql.QueryContext(ctx, query, accountID, startTime, endTime)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = rows.Close() }()
+
+	now := time.Now()
+	for rows.Next() {
+		var start, end time.Time
+		var resetAt sql.NullTime
+		var maxUsed sql.NullFloat64
+		var sampleCount int64
+		if err := rows.Scan(&start, &end, &resetAt, &maxUsed, &sampleCount); err != nil {
+			return nil, err
+		}
+		cycleEnd := end
+		if resetAt.Valid && resetAt.Time.Before(cycleEnd) {
+			cycleEnd = resetAt.Time
+		}
+		if !cycleEnd.After(start) {
+			continue
+		}
+
+		stats, err := r.getAccountStatsInRange(ctx, accountID, start, cycleEnd)
+		if err != nil {
+			return nil, err
+		}
+		durationDays := cycleEnd.Sub(start).Hours() / 24
+		if durationDays <= 0 {
+			continue
+		}
+		scale := 7 / durationDays
+		eqTokens := int64(float64(stats.Tokens) * scale)
+		eqCost := stats.Cost * scale
+		eqUserCost := stats.UserCost * scale
+		var costPer1M *float64
+		if eqTokens > 0 {
+			v := eqCost / float64(eqTokens) * 1_000_000
+			costPer1M = &v
+		}
+
+		startStr := start.Format(time.RFC3339)
+		endStr := cycleEnd.Format(time.RFC3339)
+		var resetStr *string
+		if resetAt.Valid {
+			v := resetAt.Time.Format(time.RFC3339)
+			resetStr = &v
+		}
+		var maxUsedPtr *float64
+		if maxUsed.Valid {
+			v := maxUsed.Float64
+			maxUsedPtr = &v
+		}
+		result.Cycles = append(result.Cycles, usagestats.OpenAICodexUsageCycle{
+			StartTime:            startStr,
+			EndTime:              endStr,
+			ResetAt:              resetStr,
+			DurationDays:         durationDays,
+			Requests:             stats.Requests,
+			Tokens:               stats.Tokens,
+			Cost:                 stats.Cost,
+			StandardCost:         stats.StandardCost,
+			UserCost:             stats.UserCost,
+			Equivalent7dTokens:   eqTokens,
+			Equivalent7dCost:     eqCost,
+			Equivalent7dUserCost: eqUserCost,
+			CostPer1MTokens:      costPer1M,
+			MaxUsed7dPercent:     maxUsedPtr,
+			SampleCount:          sampleCount,
+			Complete:             resetAt.Valid && !now.Before(resetAt.Time),
+		})
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	result.Summary = buildOpenAICodexCapacitySummary(result.Cycles)
+	return result, nil
+}
+
+func (r *usageLogRepository) getAccountStatsInRange(ctx context.Context, accountID int64, startTime, endTime time.Time) (*usagestats.AccountStats, error) {
+	query := `
+		SELECT
+			COUNT(*) as requests,
+			COALESCE(SUM(input_tokens + output_tokens + cache_creation_tokens + cache_read_tokens), 0) as tokens,
+			COALESCE(SUM(COALESCE(account_stats_cost, total_cost) * COALESCE(account_rate_multiplier, 1)), 0) as cost,
+			COALESCE(SUM(total_cost), 0) as standard_cost,
+			COALESCE(SUM(actual_cost), 0) as user_cost
+		FROM usage_logs
+		WHERE account_id = $1 AND created_at >= $2 AND created_at < $3
+	`
+	stats := &usagestats.AccountStats{}
+	if err := scanSingleRow(
+		ctx,
+		r.sql,
+		query,
+		[]any{accountID, startTime, endTime},
+		&stats.Requests,
+		&stats.Tokens,
+		&stats.Cost,
+		&stats.StandardCost,
+		&stats.UserCost,
+	); err != nil {
+		return nil, err
+	}
+	return stats, nil
+}
+
+func buildOpenAICodexCapacitySummary(cycles []usagestats.OpenAICodexUsageCycle) *usagestats.OpenAICodexCapacitySummary {
+	if len(cycles) == 0 {
+		return nil
+	}
+	tokenValues := make([]int64, 0, len(cycles))
+	costValues := make([]float64, 0, len(cycles))
+	userCostValues := make([]float64, 0, len(cycles))
+	costPer1MValues := make([]float64, 0, len(cycles))
+	completeCount := 0
+	for _, cycle := range cycles {
+		if cycle.Equivalent7dTokens <= 0 && cycle.Equivalent7dCost <= 0 {
+			continue
+		}
+		tokenValues = append(tokenValues, cycle.Equivalent7dTokens)
+		costValues = append(costValues, cycle.Equivalent7dCost)
+		userCostValues = append(userCostValues, cycle.Equivalent7dUserCost)
+		if cycle.CostPer1MTokens != nil {
+			costPer1MValues = append(costPer1MValues, *cycle.CostPer1MTokens)
+		}
+		if cycle.Complete {
+			completeCount++
+		}
+	}
+	if len(tokenValues) == 0 {
+		return &usagestats.OpenAICodexCapacitySummary{CycleCount: len(cycles), CompleteCycleCount: completeCount}
+	}
+	return &usagestats.OpenAICodexCapacitySummary{
+		CycleCount:            len(cycles),
+		CompleteCycleCount:    completeCount,
+		Median7dTokens:        percentileInt64(tokenValues, 0.5),
+		Median7dCost:          percentileFloat64(costValues, 0.5),
+		Median7dUserCost:      percentileFloat64(userCostValues, 0.5),
+		P257dTokens:           percentileInt64(tokenValues, 0.25),
+		P257dCost:             percentileFloat64(costValues, 0.25),
+		P257dUserCost:         percentileFloat64(userCostValues, 0.25),
+		MedianCostPer1MTokens: percentileFloat64(costPer1MValues, 0.5),
+	}
+}
+
+func percentileInt64(values []int64, p float64) int64 {
+	if len(values) == 0 {
+		return 0
+	}
+	sorted := append([]int64(nil), values...)
+	sort.Slice(sorted, func(i, j int) bool { return sorted[i] < sorted[j] })
+	idx := int(math.Round(float64(len(sorted)-1) * p))
+	if idx < 0 {
+		idx = 0
+	}
+	if idx >= len(sorted) {
+		idx = len(sorted) - 1
+	}
+	return sorted[idx]
+}
+
+func percentileFloat64(values []float64, p float64) float64 {
+	if len(values) == 0 {
+		return 0
+	}
+	sorted := append([]float64(nil), values...)
+	sort.Float64s(sorted)
+	idx := int(math.Round(float64(len(sorted)-1) * p))
+	if idx < 0 {
+		idx = 0
+	}
+	if idx >= len(sorted) {
+		idx = len(sorted) - 1
+	}
+	return sorted[idx]
+}
+
 // GetGeminiUsageTotalsBatch 批量聚合 Gemini 账号在窗口内的 Pro/Flash 请求与用量。
 // 模型分类规则与 service.geminiModelClassFromName 一致：model 包含 flash/lite 视为 flash，其余视为 pro。
 func (r *usageLogRepository) GetGeminiUsageTotalsBatch(ctx context.Context, accountIDs []int64, startTime, endTime time.Time) (map[int64]service.GeminiUsageTotals, error) {
@@ -3782,6 +4069,11 @@ func (r *usageLogRepository) GetAccountUsageStats(ctx context.Context, accountID
 		Endpoints:         endpoints,
 		UpstreamEndpoints: upstreamEndpoints,
 	}
+	if capacity, capacityErr := r.GetOpenAICodexCapacityStats(ctx, accountID, startTime, endTime); capacityErr != nil {
+		logger.LegacyPrintf("repository.usage_log", "GetOpenAICodexCapacityStats failed in GetAccountUsageStats: %v", capacityErr)
+	} else if capacity != nil && (capacity.Summary != nil || len(capacity.Cycles) > 0) {
+		resp.OpenAICodexCapacity = capacity
+	}
 	return resp, nil
 }
 
@@ -4361,6 +4653,13 @@ func nullInt(v *int) sql.NullInt64 {
 		return sql.NullInt64{}
 	}
 	return sql.NullInt64{Int64: int64(*v), Valid: true}
+}
+
+func nullFloat64(v *float64) sql.NullFloat64 {
+	if v == nil {
+		return sql.NullFloat64{}
+	}
+	return sql.NullFloat64{Float64: *v, Valid: true}
 }
 
 func nullFloat64Ptr(v sql.NullFloat64) *float64 {

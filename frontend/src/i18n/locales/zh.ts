@@ -3924,6 +3924,17 @@ export default {
         todayTokens: '今日 Token',
         todayCost: '今日费用',
         usageTrend: '30天费用与请求趋势',
+        codexCapacity: 'Codex 周期产能',
+        codexCapacityHint: '根据 OpenAI 7d 快照周期分段，并用本地日志换算 7天等效产出',
+        cycles: '个周期',
+        median7dTokens: '中位 7D Token',
+        median7dCost: '中位 7D 成本',
+        costPer1M: '每百万 Token 成本',
+        completeCycles: '完整周期',
+        completedOnlyHint: '用于判断数据成熟度',
+        period: '周期',
+        equivalent7d: '7D 等效',
+        max7dPercent: '最高上游7D',
         noData: '该账号暂无使用数据'
       }
     },

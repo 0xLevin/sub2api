@@ -392,6 +392,112 @@
           </div>
         </div>
 
+        <!-- OpenAI Codex quota cycle capacity -->
+        <div
+          v-if="stats.openai_codex_capacity?.summary"
+          class="card border-sky-200 bg-gradient-to-br from-sky-50 to-white p-4 dark:border-sky-800/30 dark:from-sky-900/10 dark:to-dark-700"
+        >
+          <div class="mb-4 flex items-center justify-between gap-3">
+            <div class="flex items-center gap-2">
+              <div class="rounded-lg bg-sky-100 p-1.5 dark:bg-sky-900/30">
+                <Icon name="calculator" size="sm" class="text-sky-600 dark:text-sky-400" />
+              </div>
+              <div>
+                <h3 class="text-sm font-semibold text-gray-900 dark:text-white">
+                  {{ t('admin.accounts.stats.codexCapacity') }}
+                </h3>
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                  {{ t('admin.accounts.stats.codexCapacityHint') }}
+                </p>
+              </div>
+            </div>
+            <span class="rounded bg-sky-100 px-2 py-1 text-xs font-medium text-sky-700 dark:bg-sky-900/40 dark:text-sky-300">
+              {{ stats.openai_codex_capacity.summary.cycle_count }}
+              {{ t('admin.accounts.stats.cycles') }}
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 gap-3 md:grid-cols-4">
+            <div class="rounded-lg bg-white/70 p-3 dark:bg-dark-800/70">
+              <div class="text-xs text-gray-500 dark:text-gray-400">
+                {{ t('admin.accounts.stats.median7dTokens') }}
+              </div>
+              <div class="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
+                {{ formatTokens(stats.openai_codex_capacity.summary.median_7d_tokens) }}
+              </div>
+              <div class="mt-0.5 text-xs text-gray-400">
+                P25 {{ formatTokens(stats.openai_codex_capacity.summary.p25_7d_tokens) }}
+              </div>
+            </div>
+            <div class="rounded-lg bg-white/70 p-3 dark:bg-dark-800/70">
+              <div class="text-xs text-gray-500 dark:text-gray-400">
+                {{ t('admin.accounts.stats.median7dCost') }}
+              </div>
+              <div class="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
+                ${{ formatCost(stats.openai_codex_capacity.summary.median_7d_cost) }}
+              </div>
+              <div class="mt-0.5 text-xs text-gray-400">
+                P25 ${{ formatCost(stats.openai_codex_capacity.summary.p25_7d_cost) }}
+              </div>
+            </div>
+            <div class="rounded-lg bg-white/70 p-3 dark:bg-dark-800/70">
+              <div class="text-xs text-gray-500 dark:text-gray-400">
+                {{ t('admin.accounts.stats.costPer1M') }}
+              </div>
+              <div class="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
+                ${{ formatCost(stats.openai_codex_capacity.summary.median_cost_per_1m_tokens) }}
+              </div>
+              <div class="mt-0.5 text-xs text-gray-400">/ 1M tokens</div>
+            </div>
+            <div class="rounded-lg bg-white/70 p-3 dark:bg-dark-800/70">
+              <div class="text-xs text-gray-500 dark:text-gray-400">
+                {{ t('admin.accounts.stats.completeCycles') }}
+              </div>
+              <div class="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
+                {{ stats.openai_codex_capacity.summary.complete_cycle_count }}
+              </div>
+              <div class="mt-0.5 text-xs text-gray-400">
+                {{ t('admin.accounts.stats.completedOnlyHint') }}
+              </div>
+            </div>
+          </div>
+
+          <div v-if="stats.openai_codex_capacity.cycles.length" class="mt-4 overflow-x-auto">
+            <table class="min-w-full text-left text-xs">
+              <thead class="text-gray-500 dark:text-gray-400">
+                <tr>
+                  <th class="py-2 pr-3 font-medium">{{ t('admin.accounts.stats.period') }}</th>
+                  <th class="py-2 pr-3 font-medium">{{ t('admin.accounts.stats.tokens') }}</th>
+                  <th class="py-2 pr-3 font-medium">{{ t('admin.accounts.stats.equivalent7d') }}</th>
+                  <th class="py-2 pr-3 font-medium">{{ t('usage.accountBilled') }}</th>
+                  <th class="py-2 pr-3 font-medium">{{ t('admin.accounts.stats.costPer1M') }}</th>
+                  <th class="py-2 pr-3 font-medium">{{ t('admin.accounts.stats.max7dPercent') }}</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-200 dark:divide-dark-600">
+                <tr
+                  v-for="cycle in stats.openai_codex_capacity.cycles.slice(0, 6)"
+                  :key="cycle.start_time"
+                  class="text-gray-700 dark:text-gray-300"
+                >
+                  <td class="py-2 pr-3 whitespace-nowrap">
+                    {{ formatDateTime(cycle.start_time) }} - {{ formatDateTime(cycle.end_time) }}
+                  </td>
+                  <td class="py-2 pr-3 whitespace-nowrap">{{ formatTokens(cycle.tokens) }}</td>
+                  <td class="py-2 pr-3 whitespace-nowrap">{{ formatTokens(cycle.equivalent_7d_tokens) }}</td>
+                  <td class="py-2 pr-3 whitespace-nowrap">${{ formatCost(cycle.equivalent_7d_cost) }}</td>
+                  <td class="py-2 pr-3 whitespace-nowrap">
+                    ${{ formatCost(cycle.cost_per_1m_tokens || 0) }}
+                  </td>
+                  <td class="py-2 pr-3 whitespace-nowrap">
+                    {{ cycle.max_used_7d_percent != null ? `${Math.round(cycle.max_used_7d_percent)}%` : '-' }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
         <!-- Usage Trend Chart -->
         <div class="card p-4">
           <h3 class="mb-4 text-sm font-semibold text-gray-900 dark:text-white">
@@ -709,5 +815,14 @@ const formatDuration = (ms: number): string => {
     return `${(ms / 1000).toFixed(2)}s`
   }
   return `${Math.round(ms)}ms`
+}
+
+const formatDateTime = (value: string): string => {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return '-'
+  return `${date.getMonth() + 1}/${date.getDate()} ${date.getHours().toString().padStart(2, '0')}:${date
+    .getMinutes()
+    .toString()
+    .padStart(2, '0')}`
 }
 </script>

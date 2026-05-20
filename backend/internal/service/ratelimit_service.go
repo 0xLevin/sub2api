@@ -1143,6 +1143,11 @@ func (s *RateLimitService) persistOpenAICodexSnapshot(ctx context.Context, accou
 	if err := s.accountRepo.UpdateExtra(ctx, account.ID, updates); err != nil {
 		slog.Warn("openai_codex_snapshot_persist_failed", "account_id", account.ID, "error", err)
 	}
+	if recorder, ok := s.usageRepo.(openAICodexUsageSnapshotRecorder); ok {
+		if err := recorder.RecordOpenAICodexUsageSnapshot(ctx, account.ID, snapshot); err != nil {
+			slog.Warn("openai_codex_usage_snapshot_record_failed", "account_id", account.ID, "error", err)
+		}
+	}
 }
 
 // parseOpenAIRateLimitResetTime 解析 OpenAI 格式的 429 响应，返回重置时间的 Unix 时间戳

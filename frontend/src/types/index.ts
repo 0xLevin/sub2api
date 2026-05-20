@@ -1610,6 +1610,43 @@ export interface AccountUsageStatsResponse {
   models: ModelStat[]
   endpoints: EndpointStat[]
   upstream_endpoints: EndpointStat[]
+  openai_codex_capacity?: OpenAICodexCapacityStats | null
+}
+
+export interface OpenAICodexUsageCycle {
+  start_time: string
+  end_time: string
+  reset_at?: string
+  duration_days: number
+  requests: number
+  tokens: number
+  cost: number
+  standard_cost: number
+  user_cost: number
+  equivalent_7d_tokens: number
+  equivalent_7d_cost: number
+  equivalent_7d_user_cost: number
+  cost_per_1m_tokens?: number
+  max_used_7d_percent?: number
+  sample_count: number
+  complete: boolean
+}
+
+export interface OpenAICodexCapacitySummary {
+  cycle_count: number
+  complete_cycle_count: number
+  median_7d_tokens: number
+  median_7d_cost: number
+  median_7d_user_cost: number
+  p25_7d_tokens: number
+  p25_7d_cost: number
+  p25_7d_user_cost: number
+  median_cost_per_1m_tokens: number
+}
+
+export interface OpenAICodexCapacityStats {
+  summary?: OpenAICodexCapacitySummary | null
+  cycles: OpenAICodexUsageCycle[]
 }
 
 // ==================== User Attribute Types ====================

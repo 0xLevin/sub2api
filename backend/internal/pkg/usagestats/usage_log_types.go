@@ -329,9 +329,10 @@ type AccountUsageSummary struct {
 
 // AccountUsageStatsResponse represents the full usage statistics response for an account
 type AccountUsageStatsResponse struct {
-	History           []AccountUsageHistory `json:"history"`
-	Summary           AccountUsageSummary   `json:"summary"`
-	Models            []ModelStat           `json:"models"`
-	Endpoints         []EndpointStat        `json:"endpoints"`
-	UpstreamEndpoints []EndpointStat        `json:"upstream_endpoints"`
+	History             []AccountUsageHistory     `json:"history"`
+	Summary             AccountUsageSummary       `json:"summary"`
+	Models              []ModelStat               `json:"models"`
+	Endpoints           []EndpointStat            `json:"endpoints"`
+	UpstreamEndpoints   []EndpointStat            `json:"upstream_endpoints"`
+	OpenAICodexCapacity *OpenAICodexCapacityStats `json:"openai_codex_capacity,omitempty"`
 }

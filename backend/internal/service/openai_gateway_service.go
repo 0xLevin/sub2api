@@ -5748,6 +5748,11 @@ func (s *OpenAIGatewayService) updateCodexUsageSnapshot(ctx context.Context, acc
 		updateCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 		_ = s.accountRepo.UpdateExtra(updateCtx, accountID, updates)
+		if recorder, ok := s.usageLogRepo.(openAICodexUsageSnapshotRecorder); ok {
+			if err := recorder.RecordOpenAICodexUsageSnapshot(updateCtx, accountID, snapshot); err != nil {
+				slog.Warn("openai_codex_usage_snapshot_record_failed", "account_id", accountID, "error", err)
+			}
+		}
 	}()
 }
 

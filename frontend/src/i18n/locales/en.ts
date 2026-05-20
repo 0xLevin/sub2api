@@ -3794,6 +3794,17 @@ export default {
         todayTokens: 'Today Tokens',
         todayCost: 'Today Cost',
         usageTrend: '30-Day Cost & Request Trend',
+        codexCapacity: 'Codex Cycle Capacity',
+        codexCapacityHint: 'Segmented by OpenAI 7d reset snapshots and normalized to 7-day local production',
+        cycles: 'cycles',
+        median7dTokens: 'Median 7D Tokens',
+        median7dCost: 'Median 7D Cost',
+        costPer1M: 'Cost per 1M Tokens',
+        completeCycles: 'Complete Cycles',
+        completedOnlyHint: 'Used to judge data maturity',
+        period: 'Period',
+        equivalent7d: '7D Equivalent',
+        max7dPercent: 'Max Upstream 7D',
         noData: 'No usage data available for this account'
       },
       usageWindow: {
