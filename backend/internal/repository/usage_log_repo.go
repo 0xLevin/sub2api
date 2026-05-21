@@ -2303,10 +2303,15 @@ func (r *usageLogRepository) GetOpenAICodexCapacityStats(ctx context.Context, ac
 		if durationDays <= 0 {
 			continue
 		}
-		scale := 7 / durationDays
-		eqTokens := int64(float64(stats.Tokens) * scale)
-		eqCost := stats.Cost * scale
-		eqUserCost := stats.UserCost * scale
+		isComplete := resetAt.Valid && !now.Before(resetAt.Time)
+		var eqTokens int64
+		var eqCost, eqUserCost float64
+		if isComplete {
+			scale := 7 / durationDays
+			eqTokens = int64(float64(stats.Tokens) * scale)
+			eqCost = stats.Cost * scale
+			eqUserCost = stats.UserCost * scale
+		}
 		var costPer1M *float64
 		if eqTokens > 0 {
 			v := eqCost / float64(eqTokens) * 1_000_000
@@ -2341,7 +2346,7 @@ func (r *usageLogRepository) GetOpenAICodexCapacityStats(ctx context.Context, ac
 			CostPer1MTokens:      costPer1M,
 			MaxUsed7dPercent:     maxUsedPtr,
 			SampleCount:          sampleCount,
-			Complete:             resetAt.Valid && !now.Before(resetAt.Time),
+			Complete:             isComplete,
 		})
 	}
 	if err := rows.Err(); err != nil {
@@ -2389,7 +2394,7 @@ func buildOpenAICodexCapacitySummary(cycles []usagestats.OpenAICodexUsageCycle) 
 	costPer1MValues := make([]float64, 0, len(cycles))
 	completeCount := 0
 	for _, cycle := range cycles {
-		if cycle.Equivalent7dTokens <= 0 && cycle.Equivalent7dCost <= 0 {
+		if !cycle.Complete {
 			continue
 		}
 		tokenValues = append(tokenValues, cycle.Equivalent7dTokens)
