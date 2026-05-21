@@ -94,6 +94,8 @@ var usageLogInsertArgTypes = [...]string{
 
 const rawUsageLogModelColumn = "model"
 
+const openAICodexCapacityMinPercentDelta = 1.0
+
 // rawUsageLogModelColumn preserves the exact stored usage_logs.model semantics for direct filters.
 // Historical rows may contain upstream/billing model values, while newer rows store requested_model.
 // Requested/upstream/mapping analytics must use resolveModelDimensionExpression instead.
@@ -2265,8 +2267,8 @@ func (r *usageLogRepository) GetOpenAICodexCapacityStats(ctx context.Context, ac
 			MIN(sampled_at) AS start_time,
 			MAX(sampled_at) AS end_time,
 			MAX(reset_7d_at) AS reset_at,
-			COALESCE(MAX(used_7d_percent), 0) AS max_used_7d_percent,
-			MIN(sampled_at) FILTER (WHERE used_7d_percent >= 100) AS exhausted_at,
+			(ARRAY_AGG(used_7d_percent ORDER BY sampled_at) FILTER (WHERE used_7d_percent IS NOT NULL))[1] AS start_used_7d_percent,
+			(ARRAY_AGG(used_7d_percent ORDER BY sampled_at DESC) FILTER (WHERE used_7d_percent IS NOT NULL))[1] AS end_used_7d_percent,
 			COUNT(*) AS sample_count
 		FROM grouped
 		GROUP BY cycle_no
@@ -2278,23 +2280,15 @@ func (r *usageLogRepository) GetOpenAICodexCapacityStats(ctx context.Context, ac
 		return nil, err
 	}
 	defer func() { _ = rows.Close() }()
-
-	now := time.Now()
 	for rows.Next() {
 		var start, end time.Time
-		var resetAt, exhaustedAt sql.NullTime
-		var maxUsed sql.NullFloat64
+		var resetAt sql.NullTime
+		var startUsed, endUsed sql.NullFloat64
 		var sampleCount int64
-		if err := rows.Scan(&start, &end, &resetAt, &maxUsed, &exhaustedAt, &sampleCount); err != nil {
+		if err := rows.Scan(&start, &end, &resetAt, &startUsed, &endUsed, &sampleCount); err != nil {
 			return nil, err
 		}
 		cycleEnd := end
-		if exhaustedAt.Valid && exhaustedAt.Time.Before(cycleEnd) {
-			cycleEnd = exhaustedAt.Time
-		}
-		if resetAt.Valid && resetAt.Time.Before(cycleEnd) {
-			cycleEnd = resetAt.Time
-		}
 		if !cycleEnd.After(start) {
 			continue
 		}
@@ -2307,11 +2301,15 @@ func (r *usageLogRepository) GetOpenAICodexCapacityStats(ctx context.Context, ac
 		if durationDays <= 0 {
 			continue
 		}
-		isComplete := (resetAt.Valid && !now.Before(resetAt.Time)) || (maxUsed.Valid && maxUsed.Float64 >= 100)
+		percentDelta := 0.0
+		if startUsed.Valid && endUsed.Valid {
+			percentDelta = endUsed.Float64 - startUsed.Float64
+		}
+		isComplete := percentDelta >= openAICodexCapacityMinPercentDelta
 		var eqTokens int64
 		var eqCost, eqUserCost float64
 		if isComplete {
-			scale := 7 / durationDays
+			scale := 100 / percentDelta
 			eqTokens = int64(float64(stats.Tokens) * scale)
 			eqCost = stats.Cost * scale
 			eqUserCost = stats.UserCost * scale
@@ -2330,8 +2328,8 @@ func (r *usageLogRepository) GetOpenAICodexCapacityStats(ctx context.Context, ac
 			resetStr = &v
 		}
 		var maxUsedPtr *float64
-		if maxUsed.Valid {
-			v := maxUsed.Float64
+		if endUsed.Valid {
+			v := endUsed.Float64
 			maxUsedPtr = &v
 		}
 		result.Cycles = append(result.Cycles, usagestats.OpenAICodexUsageCycle{
