@@ -579,6 +579,49 @@ func TestBuildRequestTypeFilterConditionLegacyFallback(t *testing.T) {
 	}
 }
 
+func TestGetOpenAICodexCapacityStatsTreatsExhaustedCycleAsComplete(t *testing.T) {
+	db, mock := newSQLMock(t)
+	repo := &usageLogRepository{sql: db}
+
+	start := time.Date(2026, 5, 1, 0, 0, 0, 0, time.UTC)
+	exhaustedAt := start.Add(48 * time.Hour)
+	resetAt := start.Add(7 * 24 * time.Hour)
+	end := start.Add(72 * time.Hour)
+
+	cycleRows := sqlmock.NewRows([]string{
+		"start_time",
+		"end_time",
+		"reset_at",
+		"max_used_7d_percent",
+		"exhausted_at",
+		"sample_count",
+	}).AddRow(start, end, resetAt, 100.0, exhaustedAt, int64(6))
+	mock.ExpectQuery("WITH ordered AS \\(").
+		WithArgs(int64(10), start, end).
+		WillReturnRows(cycleRows)
+
+	statsRows := sqlmock.NewRows([]string{
+		"requests",
+		"tokens",
+		"cost",
+		"standard_cost",
+		"user_cost",
+	}).AddRow(int64(20), int64(2_000_000), 4.0, 4.5, 5.0)
+	mock.ExpectQuery("SELECT\\s+COUNT\\(\\*\\) as requests").
+		WithArgs(int64(10), start, exhaustedAt).
+		WillReturnRows(statsRows)
+
+	got, err := repo.GetOpenAICodexCapacityStats(context.Background(), 10, start, end)
+	require.NoError(t, err)
+	require.NoError(t, mock.ExpectationsWereMet())
+	require.NotNil(t, got.Summary)
+	require.Equal(t, 1, got.Summary.CompleteCycleCount)
+	require.Len(t, got.Cycles, 1)
+	require.True(t, got.Cycles[0].Complete)
+	require.Equal(t, int64(7_000_000), got.Summary.Median7dTokens)
+	require.Equal(t, 14.0, got.Summary.Median7dCost)
+}
+
 type usageLogScannerStub struct {
 	values []any
 }

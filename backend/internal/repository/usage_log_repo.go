@@ -2266,6 +2266,7 @@ func (r *usageLogRepository) GetOpenAICodexCapacityStats(ctx context.Context, ac
 			MAX(sampled_at) AS end_time,
 			MAX(reset_7d_at) AS reset_at,
 			COALESCE(MAX(used_7d_percent), 0) AS max_used_7d_percent,
+			MIN(sampled_at) FILTER (WHERE used_7d_percent >= 100) AS exhausted_at,
 			COUNT(*) AS sample_count
 		FROM grouped
 		GROUP BY cycle_no
@@ -2281,13 +2282,16 @@ func (r *usageLogRepository) GetOpenAICodexCapacityStats(ctx context.Context, ac
 	now := time.Now()
 	for rows.Next() {
 		var start, end time.Time
-		var resetAt sql.NullTime
+		var resetAt, exhaustedAt sql.NullTime
 		var maxUsed sql.NullFloat64
 		var sampleCount int64
-		if err := rows.Scan(&start, &end, &resetAt, &maxUsed, &sampleCount); err != nil {
+		if err := rows.Scan(&start, &end, &resetAt, &maxUsed, &exhaustedAt, &sampleCount); err != nil {
 			return nil, err
 		}
 		cycleEnd := end
+		if exhaustedAt.Valid && exhaustedAt.Time.Before(cycleEnd) {
+			cycleEnd = exhaustedAt.Time
+		}
 		if resetAt.Valid && resetAt.Time.Before(cycleEnd) {
 			cycleEnd = resetAt.Time
 		}
@@ -2303,7 +2307,7 @@ func (r *usageLogRepository) GetOpenAICodexCapacityStats(ctx context.Context, ac
 		if durationDays <= 0 {
 			continue
 		}
-		isComplete := resetAt.Valid && !now.Before(resetAt.Time)
+		isComplete := (resetAt.Valid && !now.Before(resetAt.Time)) || (maxUsed.Valid && maxUsed.Float64 >= 100)
 		var eqTokens int64
 		var eqCost, eqUserCost float64
 		if isComplete {
