@@ -240,6 +240,50 @@ const routes: RouteRecordRaw[] = [
       requiresPayment: true
     }
   },
+  {
+    path: '/app/subscriptions',
+    name: 'BrandAppSubscriptions',
+    component: () => import('@/brand/pages/AppSubscriptionsPage.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: false,
+      title: 'My Subscriptions',
+      shell: 'app'
+    }
+  },
+  {
+    path: '/app/redeem',
+    name: 'BrandAppRedeem',
+    component: () => import('@/brand/pages/AppRedeemPage.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: false,
+      title: 'Redeem Code',
+      shell: 'app'
+    }
+  },
+  {
+    path: '/app/profile',
+    name: 'BrandAppProfile',
+    component: () => import('@/brand/pages/AppProfilePage.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: false,
+      title: 'Profile',
+      shell: 'app'
+    }
+  },
+  {
+    path: '/app/status',
+    name: 'BrandAppChannelStatus',
+    component: () => import('@/brand/pages/AppChannelStatusPage.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: false,
+      title: 'Channel Status',
+      shell: 'app'
+    }
+  },
 
   // ==================== Legacy User Routes ====================
   {
@@ -256,15 +300,7 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: '/redeem',
-    name: 'Redeem',
-    component: () => import('@/views/user/RedeemView.vue'),
-    meta: {
-      requiresAuth: true,
-      requiresAdmin: false,
-      title: 'Redeem Code',
-      titleKey: 'redeem.title',
-      descriptionKey: 'redeem.description'
-    }
+    redirect: '/app/redeem'
   },
   {
     path: '/affiliate',
@@ -292,27 +328,11 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: '/profile',
-    name: 'Profile',
-    component: () => import('@/views/user/ProfileView.vue'),
-    meta: {
-      requiresAuth: true,
-      requiresAdmin: false,
-      title: 'Profile',
-      titleKey: 'profile.title',
-      descriptionKey: 'profile.description'
-    }
+    redirect: '/app/profile'
   },
   {
     path: '/subscriptions',
-    name: 'Subscriptions',
-    component: () => import('@/views/user/SubscriptionsView.vue'),
-    meta: {
-      requiresAuth: true,
-      requiresAdmin: false,
-      title: 'My Subscriptions',
-      titleKey: 'userSubscriptions.title',
-      descriptionKey: 'userSubscriptions.description'
-    }
+    redirect: '/app/subscriptions'
   },
   {
     path: '/purchase',
@@ -484,14 +504,7 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: '/monitor',
-    name: 'ChannelStatus',
-    component: () => import('@/views/user/ChannelStatusView.vue'),
-    meta: {
-      requiresAuth: true,
-      requiresAdmin: false,
-      title: 'Channel Status',
-      titleKey: 'nav.channelStatus'
-    }
+    redirect: '/app/status'
   },
   {
     path: '/admin/subscriptions',

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
-import { BarChart3, CreditCard, Home, KeyRound, LogOut, Menu, User, X } from 'lucide-vue-next'
+import { BarChart3, CreditCard, Gift, Home, KeyRound, LogOut, Menu, RadioTower, ReceiptText, User, X } from 'lucide-vue-next'
 import { useAppStore, useAuthStore } from '@/stores'
 import { Button } from '@/brand/ui'
 
@@ -19,7 +19,10 @@ const navItems = [
   { to: '/app', label: '概览', icon: Home },
   { to: '/app/keys', label: 'API Keys', icon: KeyRound },
   { to: '/app/usage', label: '用量', icon: BarChart3 },
-  { to: '/app/billing', label: '购买与订单', icon: CreditCard }
+  { to: '/app/subscriptions', label: '我的订阅', icon: ReceiptText },
+  { to: '/app/billing', label: '购买与订单', icon: CreditCard },
+  { to: '/app/redeem', label: '兑换', icon: Gift },
+  { to: '/app/status', label: '渠道状态', icon: RadioTower }
 ]
 
 function isActive(to: string) {
@@ -73,7 +76,7 @@ async function logout() {
           <div class="hidden rounded-md border border-zinc-200 px-3 py-1.5 text-sm dark:border-zinc-800 sm:block">
             余额 ${{ user?.balance?.toFixed(2) || '0.00' }}
           </div>
-          <RouterLink to="/profile">
+          <RouterLink to="/app/profile">
             <Button variant="outline" size="icon"><User class="h-4 w-4" /></Button>
           </RouterLink>
           <Button variant="ghost" size="icon" @click="logout"><LogOut class="h-4 w-4" /></Button>
