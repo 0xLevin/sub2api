@@ -157,20 +157,22 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/forgot-password',
     name: 'ForgotPassword',
-    component: () => import('@/views/auth/ForgotPasswordView.vue'),
+    component: () => import('@/brand/pages/ForgotPasswordPage.vue'),
     meta: {
       requiresAuth: false,
       title: 'Forgot Password',
-      titleKey: 'auth.forgotPasswordTitle'
+      titleKey: 'auth.forgotPasswordTitle',
+      shell: 'auth'
     }
   },
   {
     path: '/reset-password',
     name: 'ResetPassword',
-    component: () => import('@/views/auth/ResetPasswordView.vue'),
+    component: () => import('@/brand/pages/ResetPasswordPage.vue'),
     meta: {
       requiresAuth: false,
-      title: 'Reset Password'
+      title: 'Reset Password',
+      shell: 'auth'
     }
   },
   {
