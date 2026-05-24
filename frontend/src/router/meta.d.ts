@@ -64,5 +64,10 @@ declare module 'vue-router' {
      * i18n key for the page description
      */
     descriptionKey?: string
+
+    /**
+     * Visual shell used by the route. Brand shells do not render legacy global UI.
+     */
+    shell?: 'brand' | 'auth' | 'app' | 'legacy'
   }
 }

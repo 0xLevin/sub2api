@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { RouterView, useRouter, useRoute } from 'vue-router'
-import { onMounted, onBeforeUnmount, watch } from 'vue'
+import { computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import Toast from '@/components/common/Toast.vue'
 import NavigationProgress from '@/components/common/NavigationProgress.vue'
 import { resolveDocumentTitle } from '@/router/title'
 import AnnouncementPopup from '@/components/common/AnnouncementPopup.vue'
+import BrandToaster from '@/brand/components/BrandToaster.vue'
 import { useAppStore, useAuthStore, useSubscriptionStore, useAnnouncementStore } from '@/stores'
 import { getSetupStatus } from '@/api/setup'
 
@@ -14,6 +15,7 @@ const appStore = useAppStore()
 const authStore = useAuthStore()
 const subscriptionStore = useSubscriptionStore()
 const announcementStore = useAnnouncementStore()
+const isBrandShell = computed(() => ['brand', 'auth', 'app'].includes(route.meta.shell as string))
 
 /**
  * Update favicon dynamically
@@ -114,6 +116,9 @@ onMounted(async () => {
 <template>
   <NavigationProgress />
   <RouterView />
-  <Toast />
-  <AnnouncementPopup />
+  <BrandToaster v-if="isBrandShell" />
+  <template v-else>
+    <Toast />
+    <AnnouncementPopup />
+  </template>
 </template>

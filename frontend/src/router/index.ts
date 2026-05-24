@@ -30,32 +30,49 @@ const routes: RouteRecordRaw[] = [
 
   // ==================== Public Routes ====================
   {
-    path: '/home',
-    name: 'Home',
-    component: () => import('@/views/HomeView.vue'),
+    path: '/',
+    name: 'CommercialHome',
+    component: () => import('@/brand/pages/MarketingHomePage.vue'),
     meta: {
       requiresAuth: false,
-      title: 'Home'
+      title: 'Home',
+      shell: 'brand'
+    }
+  },
+  {
+    path: '/home',
+    redirect: '/'
+  },
+  {
+    path: '/pricing',
+    name: 'CommercialPricing',
+    component: () => import('@/brand/pages/PricingPage.vue'),
+    meta: {
+      requiresAuth: false,
+      title: 'Pricing',
+      shell: 'brand'
     }
   },
   {
     path: '/login',
     name: 'Login',
-    component: () => import('@/views/auth/LoginView.vue'),
+    component: () => import('@/brand/pages/LoginPage.vue'),
     meta: {
       requiresAuth: false,
       title: 'Login',
-      titleKey: 'common.login'
+      titleKey: 'common.login',
+      shell: 'auth'
     }
   },
   {
     path: '/register',
     name: 'Register',
-    component: () => import('@/views/auth/RegisterView.vue'),
+    component: () => import('@/brand/pages/RegisterPage.vue'),
     meta: {
       requiresAuth: false,
       title: 'Register',
-      titleKey: 'auth.createAccount'
+      titleKey: 'auth.createAccount',
+      shell: 'auth'
     }
   },
   {
@@ -175,46 +192,65 @@ const routes: RouteRecordRaw[] = [
     }
   },
 
-  // ==================== User Routes ====================
+  // ==================== New Customer App Routes ====================
   {
-    path: '/',
-    redirect: '/home'
-  },
-  {
-    path: '/dashboard',
-    name: 'Dashboard',
-    component: () => import('@/views/user/DashboardView.vue'),
+    path: '/app',
+    name: 'BrandAppDashboard',
+    component: () => import('@/brand/pages/AppDashboardPage.vue'),
     meta: {
       requiresAuth: true,
       requiresAdmin: false,
       title: 'Dashboard',
-      titleKey: 'dashboard.title',
-      descriptionKey: 'dashboard.welcomeMessage'
+      shell: 'app'
     }
   },
   {
-    path: '/keys',
-    name: 'Keys',
-    component: () => import('@/views/user/KeysView.vue'),
+    path: '/app/keys',
+    name: 'BrandAppKeys',
+    component: () => import('@/brand/pages/AppKeysPage.vue'),
     meta: {
       requiresAuth: true,
       requiresAdmin: false,
       title: 'API Keys',
-      titleKey: 'keys.title',
-      descriptionKey: 'keys.description'
+      shell: 'app'
     }
   },
   {
-    path: '/usage',
-    name: 'Usage',
-    component: () => import('@/views/user/UsageView.vue'),
+    path: '/app/usage',
+    name: 'BrandAppUsage',
+    component: () => import('@/brand/pages/AppUsagePage.vue'),
     meta: {
       requiresAuth: true,
       requiresAdmin: false,
-      title: 'Usage Records',
-      titleKey: 'usage.title',
-      descriptionKey: 'usage.description'
+      title: 'Usage',
+      shell: 'app'
     }
+  },
+  {
+    path: '/app/billing',
+    name: 'BrandAppBilling',
+    component: () => import('@/brand/pages/AppBillingPage.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: false,
+      title: 'Billing',
+      shell: 'app',
+      requiresPayment: true
+    }
+  },
+
+  // ==================== Legacy User Routes ====================
+  {
+    path: '/dashboard',
+    redirect: '/app'
+  },
+  {
+    path: '/keys',
+    redirect: '/app/keys'
+  },
+  {
+    path: '/usage',
+    redirect: '/app/usage'
   },
   {
     path: '/redeem',
@@ -278,16 +314,7 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: '/purchase',
-    name: 'PurchaseSubscription',
-    component: () => import('@/views/user/PaymentView.vue'),
-    meta: {
-      requiresAuth: true,
-      requiresAdmin: false,
-      title: 'Purchase Subscription',
-      titleKey: 'nav.buySubscription',
-      descriptionKey: 'purchase.description',
-      requiresPayment: true
-    }
+    redirect: '/app/billing'
   },
   {
     path: '/orders',
@@ -774,8 +801,8 @@ router.beforeEach(async (to, _from, next) => {
         next()
         return
       }
-      // Admin users go to admin dashboard, regular users go to user dashboard
-      next(authStore.isAdmin ? '/admin/dashboard' : '/dashboard')
+      // Admin users go to admin dashboard, regular users go to the commercial console
+      next(authStore.isAdmin ? '/admin/dashboard' : '/app')
       return
     }
     // Backend mode: block public pages for unauthenticated users (except login, key-usage, setup)
@@ -802,8 +829,8 @@ router.beforeEach(async (to, _from, next) => {
 
   // Check admin requirement
   if (requiresAdmin && !authStore.isAdmin) {
-    // User is authenticated but not admin, redirect to user dashboard
-    next('/dashboard')
+    // User is authenticated but not admin, redirect to customer console
+    next('/app')
     return
   }
 
@@ -812,7 +839,7 @@ router.beforeEach(async (to, _from, next) => {
   if (to.meta.requiresPayment) {
     const paymentEnabled = appStore.cachedPublicSettings?.payment_enabled
     if (!paymentEnabled) {
-      next(authStore.isAdmin ? '/admin/dashboard' : '/dashboard')
+      next(authStore.isAdmin ? '/admin/dashboard' : '/app')
       return
     }
   }
@@ -837,7 +864,7 @@ router.beforeEach(async (to, _from, next) => {
 
     if (restrictedPaths.some((path) => to.path.startsWith(path))) {
       // 简易模式下访问受限页面,重定向到仪表板
-      next(authStore.isAdmin ? '/admin/dashboard' : '/dashboard')
+      next(authStore.isAdmin ? '/admin/dashboard' : '/app')
       return
     }
   }
