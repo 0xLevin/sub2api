@@ -46,7 +46,7 @@ func TestBaonuoSignMatchesDocumentRule(t *testing.T) {
 
 	params := map[string]string{
 		"merchantId":  "10086",
-		"orderId":     "sub2_20260526abc",
+		"orderId":     "sub220260526abc",
 		"orderAmount": "12.30",
 		"channelType": "88",
 		"notifyUrl":   "https://merchant.example.com/notify",
@@ -55,7 +55,7 @@ func TestBaonuoSignMatchesDocumentRule(t *testing.T) {
 		"payer_id":    "0",
 		"sign":        "ignored",
 	}
-	wantRaw := "channelType=88&isForm=2&merchantId=10086&notifyUrl=https://merchant.example.com/notify&orderAmount=12.30&orderId=sub2_20260526abc&key=secret"
+	wantRaw := "channelType=88&isForm=2&merchantId=10086&notifyUrl=https://merchant.example.com/notify&orderAmount=12.30&orderId=sub220260526abc&key=secret"
 	want := fmt.Sprintf("%x", md5.Sum([]byte(wantRaw)))
 	require.Equal(t, want, baonuoSign(params, "secret"))
 }
@@ -78,7 +78,7 @@ func TestBaonuoCreatePaymentPostsSignedForm(t *testing.T) {
 
 	prov := mustTestBaonuoProvider(t, server)
 	resp, err := prov.CreatePayment(context.Background(), payment.CreatePaymentRequest{
-		OrderID:   "sub2_order",
+		OrderID:   "sub2_order_123",
 		Amount:    "12.34",
 		Subject:   "Sub2API 12.34 CNY",
 		NotifyURL: "https://merchant.example.com/api/v1/payment/webhook/baonuo",
@@ -86,14 +86,28 @@ func TestBaonuoCreatePaymentPostsSignedForm(t *testing.T) {
 		ClientIP:  "203.0.113.9",
 	})
 	require.NoError(t, err)
-	require.Equal(t, "sub2_order", resp.TradeNo)
+	require.Equal(t, "sub2order123", resp.TradeNo)
 	require.Equal(t, "https://baonuo.example/pay/123", resp.PayURL)
 	require.Equal(t, "CNY", resp.Currency)
 	require.Equal(t, "10086", gotForm.Get("merchantId"))
-	require.Equal(t, "sub2_order", gotForm.Get("orderId"))
+	require.Equal(t, "sub2order123", gotForm.Get("orderId"))
+	require.Empty(t, gotForm.Get("payer_id"))
 	require.Equal(t, "12.34", gotForm.Get("orderAmount"))
 	require.Equal(t, "88", gotForm.Get("channelType"))
 	require.Equal(t, "2", gotForm.Get("isForm"))
+}
+
+func TestBaonuoMerchantOrderIDMatchesDocumentConstraint(t *testing.T) {
+	t.Parallel()
+
+	got, err := baonuoMerchantOrderID("sub2_20260526AbCd1234")
+	require.NoError(t, err)
+	require.Equal(t, "sub220260526AbCd1234", got)
+	require.Len(t, got, 20)
+
+	got, err = baonuoMerchantOrderID("****")
+	require.NoError(t, err)
+	require.Regexp(t, `^[A-Za-z0-9]{10,50}$`, got)
 }
 
 func TestBaonuoQueryOrderMapsPaidStatus(t *testing.T) {

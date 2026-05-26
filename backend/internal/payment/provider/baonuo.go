@@ -127,6 +127,10 @@ func (b *Baonuo) CreatePayment(ctx context.Context, req payment.CreatePaymentReq
 	if strings.TrimSpace(req.OrderID) == "" {
 		return nil, fmt.Errorf("baonuo create payment: missing order id")
 	}
+	merchantOrderID, err := baonuoMerchantOrderID(req.OrderID)
+	if err != nil {
+		return nil, err
+	}
 	amount := strings.TrimSpace(req.Amount)
 	if _, err := strconv.ParseFloat(amount, 64); err != nil || amount == "" {
 		return nil, fmt.Errorf("baonuo create payment: invalid amount %s", req.Amount)
@@ -138,14 +142,13 @@ func (b *Baonuo) CreatePayment(ctx context.Context, req payment.CreatePaymentReq
 
 	params := map[string]string{
 		"merchantId":  b.config["merchantId"],
-		"orderId":     req.OrderID,
+		"orderId":     merchantOrderID,
 		"orderAmount": amount,
 		"channelType": b.config["channelType"],
 		"notifyUrl":   notifyURL,
 		"returnUrl":   returnURL,
 		"isForm":      baonuoIsFormJSON,
 		"payer_ip":    strings.TrimSpace(req.ClientIP),
-		"payer_id":    strings.TrimSpace(req.OrderID),
 		"order_title": strings.TrimSpace(req.Subject),
 		"order_body":  strings.TrimSpace(req.Subject),
 	}
@@ -173,7 +176,7 @@ func (b *Baonuo) CreatePayment(ctx context.Context, req payment.CreatePaymentReq
 		return nil, fmt.Errorf("baonuo create payment: missing payUrl")
 	}
 	return &payment.CreatePaymentResponse{
-		TradeNo:  req.OrderID,
+		TradeNo:  merchantOrderID,
 		PayURL:   payURL,
 		Currency: b.currency(),
 	}, nil
@@ -363,6 +366,30 @@ func baonuoSign(params map[string]string, apiKey string) string {
 	raw := strings.Join(parts, "&") + "&key=" + apiKey
 	sum := md5.Sum([]byte(raw))
 	return hex.EncodeToString(sum[:])
+}
+
+func baonuoMerchantOrderID(orderID string) (string, error) {
+	orderID = strings.TrimSpace(orderID)
+	var b strings.Builder
+	b.Grow(len(orderID))
+	for _, ch := range orderID {
+		if (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') {
+			_, _ = b.WriteRune(ch)
+		}
+	}
+	merchantOrderID := b.String()
+	if len(merchantOrderID) >= 10 && len(merchantOrderID) <= 50 {
+		return merchantOrderID, nil
+	}
+	sum := md5.Sum([]byte(orderID))
+	merchantOrderID = "S2" + hex.EncodeToString(sum[:])
+	if len(merchantOrderID) > 50 {
+		merchantOrderID = merchantOrderID[:50]
+	}
+	if len(merchantOrderID) < 10 {
+		return "", fmt.Errorf("baonuo create payment: invalid order id %s", orderID)
+	}
+	return merchantOrderID, nil
 }
 
 func baonuoIsEmptySignValue(value string) bool {

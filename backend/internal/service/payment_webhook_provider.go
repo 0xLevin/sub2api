@@ -32,6 +32,9 @@ func (s *PaymentService) GetWebhookProvider(ctx context.Context, providerKey, ou
 func (s *PaymentService) GetWebhookProviders(ctx context.Context, providerKey, outTradeNo string) ([]payment.Provider, error) {
 	if outTradeNo != "" {
 		order, err := s.entClient.PaymentOrder.Query().Where(paymentorder.OutTradeNo(outTradeNo)).Only(ctx)
+		if err != nil && strings.TrimSpace(providerKey) == payment.TypeBaonuo {
+			order, err = s.entClient.PaymentOrder.Query().Where(paymentorder.PaymentTradeNo(outTradeNo)).Only(ctx)
+		}
 		if err == nil {
 			if psHasPinnedProviderInstance(order) {
 				prov, err := s.getPinnedOrderProvider(ctx, order)
