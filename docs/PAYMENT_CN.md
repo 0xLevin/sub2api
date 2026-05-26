@@ -25,8 +25,12 @@ Sub2API 内置支付系统，支持用户自助充值，无需部署独立的支
 | **支付宝官方** | 桌面二维码扫码、移动端支付宝跳转 | 直接对接支付宝开放平台，桌面端返回二维码，移动端返回 WAP/唤起链接 |
 | **微信官方** | Native 扫码、H5、公众号/JSAPI 支付 | 直接对接微信支付 APIv3，按终端环境自动分流 |
 | **Stripe** | 银行卡、支付宝、微信支付、Link 等 | 国际支付，支持多币种 |
+| **Airwallex** | 托管收银台 / Payment Intent | 通过 Airwallex Payment Acceptance 接入国际收款 |
+| **保诺支付** | 托管支付链接 | 使用保诺签名表单 API 的聚合支付网关 |
 
 > 支付宝官方 / 微信官方与易支付可以同时作为后台服务商实例存在，但前台始终只展示 `支付宝`、`微信支付` 两个可见按钮。管理员需要分别为这两个按钮选择唯一支付来源：官方或易支付。官方渠道直接对接 API，资金直达商户账户，手续费更低；易支付通过第三方平台聚合，接入门槛更低。
+
+> Stripe、Airwallex 与保诺支付启用后会作为独立前台支付按钮展示。
 
 > **易支付服务商推荐**：以下两家均为兼容易支付协议的第三方聚合支付，按资金通道与结算方式选择：
 >
@@ -154,6 +158,34 @@ Sub2API 内置支付系统，支持用户自助充值，无需部署独立的支
 | **Publishable Key** | Stripe 可公开密钥（`pk_live_...` 或 `pk_test_...`） | 是 |
 | **Webhook Secret** | Stripe Webhook 签名密钥（`whsec_...`） | 是 |
 
+### Airwallex
+
+通过 Airwallex Payment Acceptance 接入国际收款。
+
+| 参数 | 说明 | 必填 |
+|------|------|------|
+| **Client ID** | Airwallex API Client ID | 是 |
+| **API Key** | Airwallex API Key | 是 |
+| **Webhook Secret** | Airwallex Webhook 签名密钥 | 是 |
+| **API Base URL** | `https://api.airwallex.com/api/v1` 或测试环境地址 | 是 |
+| **国家/地区代码** | 两位收银台国家/地区代码 | 否 |
+| **支付币种** | 支付币种 | 否 |
+| **账户 ID** | 多账户或连接账户场景使用 | 否 |
+
+### 保诺支付
+
+使用保诺签名表单 API 的聚合支付网关。下单后返回托管支付链接，支付完成后以表单方式发送异步回调。
+
+| 参数 | 说明 | 必填 |
+|------|------|------|
+| **商户号** | 保诺商户号 | 是 |
+| **API Key** | 保诺签名密钥 | 是 |
+| **API Base URL** | 保诺网关域名，默认 `https://baonuo.roseland.life` | 是 |
+| **通道编号** | 商户后台查看的保诺通道编号 | 是 |
+| **支付币种** | 支付币种，默认 `CNY` | 否 |
+
+> 当前保诺支付接入不支持线上退款。请关闭保诺服务商实例的退款开关。
+
 ---
 
 ## 服务商实例管理
@@ -195,6 +227,8 @@ Sub2API 内置支付系统，支持用户自助充值，无需部署独立的支
 | **支付宝官方** | `https://your-domain.com/api/v1/payment/webhook/alipay` |
 | **微信官方** | `https://your-domain.com/api/v1/payment/webhook/wxpay` |
 | **Stripe** | `https://your-domain.com/api/v1/payment/webhook/stripe` |
+| **Airwallex** | `https://your-domain.com/api/v1/payment/webhook/airwallex` |
+| **保诺支付** | `https://your-domain.com/api/v1/payment/webhook/baonuo` |
 
 > 将 `your-domain.com` 替换为你的实际域名。EasyPay / 支付宝 / 微信的回调地址在添加服务商时自动填入，无需手动配置。
 
@@ -231,7 +265,9 @@ Sub2API 内置支付系统，支持用户自助充值，无需部署独立的支
   ├─ EasyPay    → 扫码 / H5 跳转
   ├─ 支付宝官方  → 桌面扫码单（当面付优先，电脑网站支付回退）/ 移动端支付宝跳转
   ├─ 微信官方    → 桌面 Native 扫码 / 非微信 H5 / 微信内 JSAPI
-  └─ Stripe     → Payment Element（银行卡/支付宝/微信等）
+  ├─ Stripe     → Payment Element（银行卡/支付宝/微信等）
+  ├─ Airwallex  → Airwallex Payment Intent 收银台
+  └─ 保诺支付    → 托管支付链接
        │
        ▼
   支付回调验签 → 订单 PAID

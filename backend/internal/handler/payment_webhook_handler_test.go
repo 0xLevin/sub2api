@@ -62,6 +62,13 @@ func TestWriteSuccessResponse(t *testing.T) {
 			wantBody:        "success",
 		},
 		{
+			name:            "baonuo returns plain text ok",
+			providerKey:     payment.TypeBaonuo,
+			wantCode:        http.StatusOK,
+			wantContentType: "text/plain",
+			wantBody:        "ok",
+		},
+		{
 			name:            "alipay returns plain text success",
 			providerKey:     "alipay",
 			wantCode:        http.StatusOK,
@@ -177,6 +184,12 @@ func TestExtractOutTradeNo(t *testing.T) {
 			providerKey: payment.TypeAirwallex,
 			rawBody:     `{"name":"payment_intent.succeeded","data":{"object":{"merchant_order_id":"sub2_awx_123"}}}`,
 			want:        "sub2_awx_123",
+		},
+		{
+			name:        "baonuo form payload",
+			providerKey: payment.TypeBaonuo,
+			rawBody:     "merchantId=10086&orderId=sub2_bn_123&status=ok",
+			want:        "sub2_bn_123",
 		},
 	}
 

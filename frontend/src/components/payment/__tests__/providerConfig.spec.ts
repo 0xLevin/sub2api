@@ -50,3 +50,21 @@ describe('PROVIDER_CONFIG_FIELDS.stripe', () => {
     expect(currency?.options).toBe(PAYMENT_CURRENCY_OPTIONS)
   })
 })
+
+describe('PROVIDER_CONFIG_FIELDS.baonuo', () => {
+  it('defines the required BaoNuo merchant fields and default gateway', () => {
+    expect(findField('baonuo', 'merchantId')?.sensitive).toBe(false)
+    expect(findField('baonuo', 'apiKey')?.sensitive).toBe(true)
+    expect(findField('baonuo', 'channelType')?.sensitive).toBe(false)
+    expect(findField('baonuo', 'apiBase')?.defaultValue).toBe('https://baonuo.roseland.life')
+    expect(findField('baonuo', 'apiBase')?.hintKey).toBe('admin.settings.payment.field_baonuoApiBaseHint')
+  })
+
+  it('adds currency config with CNY as the default', () => {
+    const currency = findField('baonuo', 'currency')
+
+    expect(currency?.defaultValue).toBe('CNY')
+    expect(currency?.hintKey).toBe('admin.settings.payment.field_paymentCurrencyHint')
+    expect(currency?.options).toBe(PAYMENT_CURRENCY_OPTIONS)
+  })
+})

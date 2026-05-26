@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - product-edition
+      - 'feature/**'
   workflow_dispatch:
     inputs:
       ref:

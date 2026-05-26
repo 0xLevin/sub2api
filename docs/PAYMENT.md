@@ -25,8 +25,12 @@ Sub2API has a built-in payment system that enables user self-service top-up with
 | **Alipay (Direct)** | Desktop QR code, mobile Alipay redirect | Direct integration with Alipay Open Platform, returning desktop QR codes and mobile WAP/app launch links |
 | **WeChat Pay (Direct)** | Native QR, H5, MP/JSAPI Pay | Direct integration with WeChat Pay APIv3 with environment-aware routing |
 | **Stripe** | Card, Alipay, WeChat Pay, Link, etc. | International payments, multi-currency support |
+| **Airwallex** | Hosted checkout / payment intent | International payments through Airwallex Payment Acceptance |
+| **BaoNuo** | Hosted payment link | Aggregated payment gateway using BaoNuo's signed form API |
 
 > Alipay/WeChat Pay direct and EasyPay can both exist as backend provider instances, but the frontend always exposes only two visible buttons: `Alipay` and `WeChat Pay`. Admins choose exactly one source for each visible method: direct or EasyPay. Direct channels connect to payment APIs directly with lower fees; EasyPay aggregates through third-party platforms with easier setup.
+
+> Stripe, Airwallex, and BaoNuo are exposed as dedicated frontend payment buttons when enabled.
 
 > **EasyPay Provider Recommendations**: Both options below are third-party aggregators compatible with the EasyPay protocol. Pick based on the funding channel and settlement currency you need:
 >
@@ -154,6 +158,34 @@ International payment platform supporting multiple payment methods and currencie
 | **Publishable Key** | Stripe publishable key (`pk_live_...` or `pk_test_...`) | Yes |
 | **Webhook Secret** | Stripe Webhook signing secret (`whsec_...`) | Yes |
 
+### Airwallex
+
+International payment platform using Airwallex Payment Acceptance.
+
+| Parameter | Description | Required |
+|-----------|-------------|----------|
+| **Client ID** | Airwallex API client ID | Yes |
+| **API Key** | Airwallex API key | Yes |
+| **Webhook Secret** | Airwallex webhook signing secret | Yes |
+| **API Base URL** | `https://api.airwallex.com/api/v1` or demo base URL | Yes |
+| **Country Code** | Two-letter checkout country/region code | No |
+| **Currency** | Payment currency | No |
+| **Account ID** | Connected/account ID for multi-account setups | No |
+
+### BaoNuo
+
+Aggregated payment gateway using BaoNuo's signed form API. It returns a hosted payment link and sends form-encoded asynchronous callbacks.
+
+| Parameter | Description | Required |
+|-----------|-------------|----------|
+| **Merchant ID** | BaoNuo merchant ID | Yes |
+| **API Key** | BaoNuo signing key | Yes |
+| **API Base URL** | BaoNuo gateway origin, default `https://baonuo.roseland.life` | Yes |
+| **Channel Type** | BaoNuo channel number from merchant dashboard | Yes |
+| **Currency** | Payment currency, default `CNY` | No |
+
+> BaoNuo refunds are not supported by the current integration. Disable refunds for BaoNuo provider instances.
+
 ---
 
 ## Provider Instance Management
@@ -195,6 +227,8 @@ When adding a provider, the system auto-generates callback URLs from your site d
 | **Alipay (Direct)** | `https://your-domain.com/api/v1/payment/webhook/alipay` |
 | **WeChat Pay (Direct)** | `https://your-domain.com/api/v1/payment/webhook/wxpay` |
 | **Stripe** | `https://your-domain.com/api/v1/payment/webhook/stripe` |
+| **Airwallex** | `https://your-domain.com/api/v1/payment/webhook/airwallex` |
+| **BaoNuo** | `https://your-domain.com/api/v1/payment/webhook/baonuo` |
 
 > Replace `your-domain.com` with your actual domain. For EasyPay / Alipay / WeChat Pay, the callback URL is auto-filled when adding the provider — no manual configuration needed.
 
@@ -231,7 +265,9 @@ User selects amount and payment method
   ├─ EasyPay     → QR code / H5 redirect
   ├─ Alipay      → Desktop QR payload (Face-to-Face preferred, Website Pay fallback) / mobile Alipay redirect
   ├─ WeChat Pay  → Desktop Native QR / non-WeChat H5 / in-WeChat JSAPI
-  └─ Stripe      → Payment Element (card/Alipay/WeChat/etc.)
+  ├─ Stripe      → Payment Element (card/Alipay/WeChat/etc.)
+  ├─ Airwallex   → Airwallex payment intent checkout
+  └─ BaoNuo      → Hosted payment link
        │
        ▼
   Webhook callback verified → Order PAID
