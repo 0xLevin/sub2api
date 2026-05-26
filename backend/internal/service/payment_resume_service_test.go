@@ -171,6 +171,17 @@ func TestBuildPaymentReturnURLWithoutResumeTokenStillIncludesOutTradeNo(t *testi
 	}
 }
 
+func TestProviderReturnResumeTokenOmitsBaoNuo(t *testing.T) {
+	t.Parallel()
+
+	if got := providerReturnResumeToken(&payment.InstanceSelection{ProviderKey: payment.TypeBaonuo}, "resume-token"); got != "" {
+		t.Fatalf("providerReturnResumeToken for BaoNuo = %q, want empty", got)
+	}
+	if got := providerReturnResumeToken(&payment.InstanceSelection{ProviderKey: payment.TypeAlipay}, "resume-token"); got != "resume-token" {
+		t.Fatalf("providerReturnResumeToken for Alipay = %q, want resume-token", got)
+	}
+}
+
 func TestBuildPaymentReturnURLEmptyBase(t *testing.T) {
 	t.Parallel()
 

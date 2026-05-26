@@ -439,7 +439,7 @@ func (s *PaymentService) invokeProvider(ctx context.Context, order *dbent.Paymen
 			}
 		}
 	}
-	providerReturnURL, err := buildPaymentReturnURL(canonicalReturnURL, order.ID, outTradeNo, resumeToken)
+	providerReturnURL, err := buildPaymentReturnURL(canonicalReturnURL, order.ID, outTradeNo, providerReturnResumeToken(sel, resumeToken))
 	if err != nil {
 		return nil, err
 	}
@@ -483,6 +483,13 @@ func (s *PaymentService) invokeProvider(ctx context.Context, order *dbent.Paymen
 	resp := buildCreateOrderResponse(order, req, payAmount, sel, pr, resultType)
 	resp.ResumeToken = resumeToken
 	return resp, nil
+}
+
+func providerReturnResumeToken(sel *payment.InstanceSelection, resumeToken string) string {
+	if sel != nil && strings.TrimSpace(sel.ProviderKey) == payment.TypeBaonuo {
+		return ""
+	}
+	return resumeToken
 }
 
 func buildProviderCreatePaymentRequest(req CreateOrderRequest, sel *payment.InstanceSelection, orderID, amount, subject string) payment.CreatePaymentRequest {
