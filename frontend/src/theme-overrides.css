@@ -1,0 +1,1299 @@
+:root {
+  --background: #f4f0e8;
+  --foreground: #181713;
+  --card: #fffaf0;
+  --card-strong: #f0e6d5;
+  --surface: #f7f1e6;
+  --surface-muted: #e7ddca;
+  --surface-hover: #efe4d2;
+  --text-muted: #706753;
+  --text-subtle: #928771;
+  --primary: #1f6f68;
+  --primary-foreground: #f9f5ec;
+  --secondary: #d8c9ad;
+  --muted: #e7ddca;
+  --accent: #9b5f2f;
+  --destructive: #b42318;
+  --border: #26231e;
+  --input: #fffdf7;
+  --ring: #1f6f68;
+  --public-grid: rgba(31, 111, 104, 0.16);
+  --public-shadow: 8px 8px 0 rgba(38, 35, 30, 0.18);
+  --font-sans-public: "Oxanium", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  --font-mono-public: "Source Code Pro", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.dark {
+  --background: #101210;
+  --foreground: #f5f0e7;
+  --card: #191b18;
+  --card-strong: #22251f;
+  --surface: #151714;
+  --surface-muted: #20231f;
+  --surface-hover: #262a24;
+  --text-muted: #b7ab92;
+  --text-subtle: #8c826e;
+  --primary: #5bd5c8;
+  --primary-foreground: #07100f;
+  --secondary: #2a2d27;
+  --muted: #20231f;
+  --accent: #d99a58;
+  --destructive: #ff6b5f;
+  --border: #e3d6bd;
+  --input: #121411;
+  --ring: #5bd5c8;
+  --public-grid: rgba(91, 213, 200, 0.18);
+  --public-shadow: 8px 8px 0 rgba(0, 0, 0, 0.34);
+}
+
+html {
+  font-family: var(--font-sans-public);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+.dark body {
+  background:
+    radial-gradient(circle at 82% -10%, color-mix(in srgb, var(--primary) 10%, transparent), transparent 34rem),
+    linear-gradient(135deg, #101210 0%, #151714 46%, #11130f 100%),
+    var(--background) !important;
+}
+
+code,
+kbd,
+pre,
+.font-mono,
+[class*="font-mono"] {
+  font-family: var(--font-mono-public);
+}
+
+::selection {
+  background: color-mix(in srgb, var(--primary) 24%, transparent);
+  color: var(--foreground);
+}
+
+::-webkit-scrollbar-track {
+  background: var(--muted);
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 0;
+  background: color-mix(in srgb, var(--border) 36%, transparent);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
+.rounded,
+.rounded-sm,
+.rounded-md,
+.rounded-lg,
+.rounded-xl,
+.rounded-2xl,
+.rounded-3xl,
+.rounded-4xl,
+.rounded-full,
+.rounded-none,
+.rounded-s,
+.rounded-e,
+.rounded-t,
+.rounded-r,
+.rounded-b,
+.rounded-l,
+.rounded-ss,
+.rounded-se,
+.rounded-ee,
+.rounded-es,
+.rounded-tl,
+.rounded-tr,
+.rounded-br,
+.rounded-bl,
+.rounded-s-sm,
+.rounded-e-sm,
+.rounded-t-sm,
+.rounded-r-sm,
+.rounded-b-sm,
+.rounded-l-sm,
+.rounded-ss-sm,
+.rounded-se-sm,
+.rounded-ee-sm,
+.rounded-es-sm,
+.rounded-tl-sm,
+.rounded-tr-sm,
+.rounded-br-sm,
+.rounded-bl-sm,
+.rounded-s-md,
+.rounded-e-md,
+.rounded-t-md,
+.rounded-r-md,
+.rounded-b-md,
+.rounded-l-md,
+.rounded-ss-md,
+.rounded-se-md,
+.rounded-ee-md,
+.rounded-es-md,
+.rounded-tl-md,
+.rounded-tr-md,
+.rounded-br-md,
+.rounded-bl-md,
+.rounded-s-lg,
+.rounded-e-lg,
+.rounded-t-lg,
+.rounded-r-lg,
+.rounded-b-lg,
+.rounded-l-lg,
+.rounded-ss-lg,
+.rounded-se-lg,
+.rounded-ee-lg,
+.rounded-es-lg,
+.rounded-tl-lg,
+.rounded-tr-lg,
+.rounded-br-lg,
+.rounded-bl-lg,
+.rounded-s-xl,
+.rounded-e-xl,
+.rounded-t-xl,
+.rounded-r-xl,
+.rounded-b-xl,
+.rounded-l-xl,
+.rounded-ss-xl,
+.rounded-se-xl,
+.rounded-ee-xl,
+.rounded-es-xl,
+.rounded-tl-xl,
+.rounded-tr-xl,
+.rounded-br-xl,
+.rounded-bl-xl,
+.rounded-s-2xl,
+.rounded-e-2xl,
+.rounded-t-2xl,
+.rounded-r-2xl,
+.rounded-b-2xl,
+.rounded-l-2xl,
+.rounded-ss-2xl,
+.rounded-se-2xl,
+.rounded-ee-2xl,
+.rounded-es-2xl,
+.rounded-tl-2xl,
+.rounded-tr-2xl,
+.rounded-br-2xl,
+.rounded-bl-2xl,
+.rounded-s-3xl,
+.rounded-e-3xl,
+.rounded-t-3xl,
+.rounded-r-3xl,
+.rounded-b-3xl,
+.rounded-l-3xl,
+.rounded-ss-3xl,
+.rounded-se-3xl,
+.rounded-ee-3xl,
+.rounded-es-3xl,
+.rounded-tl-3xl,
+.rounded-tr-3xl,
+.rounded-br-3xl,
+.rounded-bl-3xl {
+  border-radius: 0 !important;
+}
+
+.rounded-t,
+.rounded-t-sm,
+.rounded-t-md,
+.rounded-t-lg,
+.rounded-t-xl,
+.rounded-t-2xl,
+.rounded-t-3xl {
+  border-top-left-radius: 0 !important;
+  border-top-right-radius: 0 !important;
+}
+
+.rounded-r,
+.rounded-r-sm,
+.rounded-r-md,
+.rounded-r-lg,
+.rounded-r-xl,
+.rounded-r-2xl,
+.rounded-r-3xl {
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+
+.rounded-b,
+.rounded-b-sm,
+.rounded-b-md,
+.rounded-b-lg,
+.rounded-b-xl,
+.rounded-b-2xl,
+.rounded-b-3xl {
+  border-bottom-right-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+}
+
+.rounded-l,
+.rounded-l-sm,
+.rounded-l-md,
+.rounded-l-lg,
+.rounded-l-xl,
+.rounded-l-2xl,
+.rounded-l-3xl {
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+}
+
+.rounded-tl,
+.rounded-tl-sm,
+.rounded-tl-md,
+.rounded-tl-lg,
+.rounded-tl-xl,
+.rounded-tl-2xl,
+.rounded-tl-3xl {
+  border-top-left-radius: 0 !important;
+}
+
+.rounded-tr,
+.rounded-tr-sm,
+.rounded-tr-md,
+.rounded-tr-lg,
+.rounded-tr-xl,
+.rounded-tr-2xl,
+.rounded-tr-3xl {
+  border-top-right-radius: 0 !important;
+}
+
+.rounded-br,
+.rounded-br-sm,
+.rounded-br-md,
+.rounded-br-lg,
+.rounded-br-xl,
+.rounded-br-2xl,
+.rounded-br-3xl {
+  border-bottom-right-radius: 0 !important;
+}
+
+.rounded-bl,
+.rounded-bl-sm,
+.rounded-bl-md,
+.rounded-bl-lg,
+.rounded-bl-xl,
+.rounded-bl-2xl,
+.rounded-bl-3xl {
+  border-bottom-left-radius: 0 !important;
+}
+
+.animate-spin.rounded-full,
+.loading-spinner,
+.loading-spinner.rounded-full,
+[class*="spinner"].rounded-full,
+[class*="Spinner"].rounded-full {
+  border-radius: 9999px !important;
+}
+
+.btn {
+  border-radius: 0 !important;
+  font-family: var(--font-sans-public);
+  letter-spacing: 0.02em;
+}
+
+.bg-gray-50,
+.bg-gray-100,
+.bg-gray-100\/80,
+.bg-gray-50\/80,
+.bg-slate-50,
+.bg-slate-100 {
+  background-color: var(--surface) !important;
+}
+
+.bg-white,
+.bg-white\/40,
+.bg-white\/50,
+.bg-white\/60,
+.bg-white\/70,
+.bg-white\/80,
+.bg-white\/90 {
+  background-color: var(--card) !important;
+}
+
+.dark .dark\:bg-dark-950,
+.dark .dark\:bg-dark-900,
+.dark .dark\:bg-dark-900\/20,
+.dark .dark\:bg-dark-900\/30,
+.dark .dark\:bg-dark-900\/50,
+.dark .dark\:bg-dark-900\/80,
+.dark .dark\:bg-dark-800,
+.dark .dark\:bg-dark-800\/20,
+.dark .dark\:bg-dark-800\/30,
+.dark .dark\:bg-dark-800\/40,
+.dark .dark\:bg-dark-800\/50,
+.dark .dark\:bg-dark-800\/60,
+.dark .dark\:bg-dark-800\/70,
+.dark .dark\:bg-dark-800\/80,
+.dark .dark\:bg-dark-700,
+.dark .dark\:bg-dark-700\/20,
+.dark .dark\:bg-dark-700\/30,
+.dark .dark\:bg-dark-700\/50,
+.dark .dark\:bg-dark-600,
+.dark .dark\:bg-slate-900,
+.dark .dark\:bg-slate-800,
+.dark .dark\:bg-gray-900,
+.dark .dark\:bg-gray-800,
+.dark .dark\:bg-gray-700 {
+  background-color: var(--card) !important;
+}
+
+.dark .dark\:bg-dark-950,
+.dark .dark\:bg-dark-900,
+.dark .dark\:bg-gray-900 {
+  background-color: var(--background) !important;
+}
+
+.dark .dark\:bg-dark-800,
+.dark .dark\:bg-dark-800\/20,
+.dark .dark\:bg-dark-800\/30,
+.dark .dark\:bg-dark-800\/40,
+.dark .dark\:bg-dark-800\/50,
+.dark .dark\:bg-dark-800\/60,
+.dark .dark\:bg-dark-800\/70,
+.dark .dark\:bg-dark-800\/80,
+.dark .dark\:bg-gray-800,
+.dark .dark\:bg-slate-800 {
+  background-color: var(--surface) !important;
+}
+
+.dark .dark\:bg-dark-700,
+.dark .dark\:bg-dark-700\/20,
+.dark .dark\:bg-dark-700\/30,
+.dark .dark\:bg-dark-700\/50,
+.dark .dark\:bg-dark-600,
+.dark .dark\:bg-gray-700 {
+  background-color: var(--surface-hover) !important;
+}
+
+.text-gray-900,
+.text-gray-800,
+.text-slate-900,
+.text-slate-800,
+.dark .dark\:text-white,
+.dark .dark\:text-gray-100,
+.dark .dark\:text-gray-200,
+.dark .dark\:text-slate-100,
+.dark .dark\:text-slate-200 {
+  color: var(--foreground) !important;
+}
+
+.text-gray-700,
+.text-gray-600,
+.text-slate-700,
+.text-slate-600,
+.dark .dark\:text-gray-300,
+.dark .dark\:text-dark-300,
+.dark .dark\:text-slate-300 {
+  color: color-mix(in srgb, var(--foreground) 78%, transparent) !important;
+}
+
+.text-gray-500,
+.text-gray-400,
+.text-slate-500,
+.text-slate-400,
+.dark .dark\:text-gray-400,
+.dark .dark\:text-gray-500,
+.dark .dark\:text-dark-400,
+.dark .dark\:text-dark-500,
+.dark .dark\:text-slate-400 {
+  color: var(--text-muted) !important;
+}
+
+.border-gray-50,
+.border-gray-100,
+.border-gray-200,
+.border-gray-300,
+.border-slate-200,
+.border-slate-300,
+.dark .dark\:border-dark-800,
+.dark .dark\:border-dark-700,
+.dark .dark\:border-dark-600,
+.dark .dark\:border-dark-500,
+.dark .dark\:border-gray-700,
+.dark .dark\:border-slate-700 {
+  border-color: color-mix(in srgb, var(--border) 28%, transparent) !important;
+}
+
+.divide-gray-100 > :not([hidden]) ~ :not([hidden]),
+.divide-gray-200 > :not([hidden]) ~ :not([hidden]),
+.dark .dark\:divide-dark-800 > :not([hidden]) ~ :not([hidden]),
+.dark .dark\:divide-dark-700 > :not([hidden]) ~ :not([hidden]) {
+  border-color: color-mix(in srgb, var(--border) 22%, transparent) !important;
+}
+
+.hover\:bg-gray-50:hover,
+.hover\:bg-gray-100:hover,
+.hover\:bg-gray-200:hover,
+.dark .dark\:hover\:bg-dark-900:hover,
+.dark .dark\:hover\:bg-dark-800:hover,
+.dark .dark\:hover\:bg-dark-700:hover,
+.dark .dark\:hover\:bg-dark-600:hover,
+.dark .dark\:hover\:bg-gray-800:hover,
+.dark .dark\:hover\:bg-gray-700:hover {
+  background-color: var(--surface-hover) !important;
+}
+
+.bg-primary-50,
+.bg-primary-100,
+.dark .dark\:bg-primary-900\/20,
+.dark .dark\:bg-primary-900\/30 {
+  background-color: color-mix(in srgb, var(--primary) 16%, var(--card)) !important;
+}
+
+.text-primary-300,
+.text-primary-400,
+.text-primary-500,
+.text-primary-600,
+.text-primary-700,
+.dark .dark\:text-primary-300,
+.dark .dark\:text-primary-400 {
+  color: var(--primary) !important;
+}
+
+.border-primary-200,
+.border-primary-500,
+.dark .dark\:border-primary-800,
+.dark .dark\:border-primary-500 {
+  border-color: var(--primary) !important;
+}
+
+.border-blue-50,
+.border-blue-100,
+.border-blue-200,
+.border-blue-300,
+.border-blue-400,
+.border-blue-500,
+.border-indigo-50,
+.border-indigo-100,
+.border-indigo-200,
+.border-indigo-300,
+.border-indigo-400,
+.border-indigo-500,
+.border-sky-50,
+.border-sky-100,
+.border-sky-200,
+.border-sky-300,
+.border-sky-400,
+.border-sky-500,
+.border-cyan-50,
+.border-cyan-100,
+.border-cyan-200,
+.border-cyan-300,
+.border-cyan-400,
+.border-cyan-500,
+.dark .dark\:border-blue-400,
+.dark .dark\:border-blue-500,
+.dark .dark\:border-blue-500\/20,
+.dark .dark\:border-indigo-400,
+.dark .dark\:border-indigo-500,
+.dark .dark\:border-sky-400,
+.dark .dark\:border-sky-500,
+.dark .dark\:border-cyan-400,
+.dark .dark\:border-cyan-500 {
+  border-color: color-mix(in srgb, var(--primary) 36%, var(--border)) !important;
+}
+
+.ring-white,
+.ring-white\/70,
+.ring-gray-100,
+.ring-gray-200,
+.ring-gray-300,
+.ring-blue-100,
+.ring-blue-200,
+.ring-blue-300,
+.ring-blue-400,
+.ring-blue-500,
+.ring-indigo-100,
+.ring-indigo-200,
+.ring-indigo-300,
+.ring-indigo-400,
+.ring-indigo-500,
+.ring-sky-100,
+.ring-sky-200,
+.ring-sky-300,
+.ring-sky-400,
+.ring-sky-500,
+.ring-cyan-100,
+.ring-cyan-200,
+.ring-cyan-300,
+.ring-cyan-400,
+.ring-cyan-500,
+.dark .dark\:ring-dark-700,
+.dark .dark\:ring-primary-900\/40,
+.dark .dark\:ring-blue-400,
+.dark .dark\:ring-blue-500,
+.dark .dark\:ring-indigo-400,
+.dark .dark\:ring-indigo-500,
+.dark .dark\:ring-sky-400,
+.dark .dark\:ring-sky-500,
+.dark .dark\:ring-cyan-400,
+.dark .dark\:ring-cyan-500 {
+  --tw-ring-color: color-mix(in srgb, var(--border) 24%, transparent) !important;
+}
+
+.focus\:ring-primary-500\/30:focus,
+.focus\:ring-primary-500\/50:focus,
+.focus\:ring-blue-500:focus,
+.focus\:ring-blue-500\/30:focus,
+.focus\:ring-indigo-500:focus,
+.focus\:ring-indigo-500\/30:focus,
+.focus\:ring-sky-500:focus,
+.focus\:ring-sky-500\/30:focus,
+.focus\:ring-cyan-500:focus,
+.focus\:ring-cyan-500\/30:focus,
+.dark .dark\:focus\:ring-primary-800:focus,
+.dark .dark\:focus\:ring-blue-500:focus,
+.dark .dark\:focus\:ring-indigo-500:focus,
+.dark .dark\:focus\:ring-sky-500:focus,
+.dark .dark\:focus\:ring-cyan-500:focus {
+  --tw-ring-color: color-mix(in srgb, var(--primary) 30%, transparent) !important;
+}
+
+.bg-blue-50,
+.bg-blue-100,
+.bg-indigo-50,
+.bg-indigo-100,
+.bg-sky-50,
+.bg-sky-100,
+.bg-cyan-50,
+.bg-cyan-100,
+.dark .dark\:bg-blue-900,
+.dark .dark\:bg-blue-900\/20,
+.dark .dark\:bg-blue-900\/30,
+.dark .dark\:bg-blue-950\/40,
+.dark .dark\:bg-indigo-900,
+.dark .dark\:bg-indigo-900\/30,
+.dark .dark\:bg-sky-900,
+.dark .dark\:bg-sky-900\/30,
+.dark .dark\:bg-cyan-900,
+.dark .dark\:bg-cyan-900\/30 {
+  background-color: color-mix(in srgb, var(--primary) 14%, var(--surface)) !important;
+}
+
+.hover\:bg-blue-50:hover,
+.hover\:bg-blue-100:hover,
+.hover\:bg-blue-200:hover,
+.hover\:bg-indigo-50:hover,
+.hover\:bg-indigo-100:hover,
+.hover\:bg-indigo-200:hover,
+.hover\:bg-sky-50:hover,
+.hover\:bg-sky-100:hover,
+.hover\:bg-sky-200:hover,
+.hover\:bg-cyan-50:hover,
+.hover\:bg-cyan-100:hover,
+.hover\:bg-cyan-200:hover,
+.dark .dark\:hover\:bg-blue-900\/20:hover,
+.dark .dark\:hover\:bg-blue-900\/50:hover,
+.dark .dark\:hover\:bg-indigo-900\/20:hover,
+.dark .dark\:hover\:bg-indigo-900\/50:hover,
+.dark .dark\:hover\:bg-sky-900\/20:hover,
+.dark .dark\:hover\:bg-sky-900\/50:hover,
+.dark .dark\:hover\:bg-cyan-900\/20:hover,
+.dark .dark\:hover\:bg-cyan-900\/50:hover {
+  background-color: color-mix(in srgb, var(--primary) 20%, var(--surface-hover)) !important;
+}
+
+.text-blue-300,
+.text-blue-400,
+.text-blue-500,
+.text-blue-600,
+.text-blue-700,
+.text-blue-800,
+.text-blue-900,
+.text-indigo-300,
+.text-indigo-400,
+.text-indigo-500,
+.text-indigo-600,
+.text-indigo-700,
+.text-indigo-800,
+.text-indigo-900,
+.text-sky-300,
+.text-sky-400,
+.text-sky-500,
+.text-sky-600,
+.text-sky-700,
+.text-sky-800,
+.text-sky-900,
+.text-cyan-300,
+.text-cyan-400,
+.text-cyan-500,
+.text-cyan-600,
+.text-cyan-700,
+.text-cyan-800,
+.text-cyan-900,
+.dark .dark\:text-blue-200,
+.dark .dark\:text-blue-300,
+.dark .dark\:text-blue-400,
+.dark .dark\:text-indigo-200,
+.dark .dark\:text-indigo-300,
+.dark .dark\:text-indigo-400,
+.dark .dark\:text-sky-200,
+.dark .dark\:text-sky-300,
+.dark .dark\:text-sky-400,
+.dark .dark\:text-cyan-200,
+.dark .dark\:text-cyan-300,
+.dark .dark\:text-cyan-400 {
+  color: var(--primary) !important;
+}
+
+.bg-mesh-gradient {
+  background-image:
+    radial-gradient(at 82% 4%, color-mix(in srgb, var(--primary) 10%, transparent) 0, transparent 32rem),
+    radial-gradient(at 18% 100%, color-mix(in srgb, var(--accent) 9%, transparent) 0, transparent 28rem),
+    linear-gradient(135deg, color-mix(in srgb, var(--background) 92%, var(--surface)) 0%, var(--background) 100%) !important;
+  background-size: auto !important;
+}
+
+.glass,
+.sidebar,
+.modal-content,
+.table-container,
+.table-scroll-container,
+.card,
+.card-glass,
+.glass-card {
+  background-color: color-mix(in srgb, var(--card) 94%, transparent) !important;
+  color: var(--foreground);
+}
+
+.btn-primary {
+  border: 1px solid var(--border) !important;
+  background: var(--primary) !important;
+  background-image: none !important;
+  color: var(--primary-foreground) !important;
+  box-shadow: 4px 4px 0 color-mix(in srgb, var(--border) 22%, transparent) !important;
+}
+
+.btn-primary:hover {
+  background: color-mix(in srgb, var(--primary) 88%, var(--foreground)) !important;
+  background-image: none !important;
+}
+
+.btn-secondary,
+.btn-ghost {
+  border: 1px solid color-mix(in srgb, var(--border) 42%, transparent) !important;
+  border-radius: 0 !important;
+}
+
+.btn-secondary {
+  background: color-mix(in srgb, var(--primary) 12%, var(--surface)) !important;
+  background-image: none !important;
+  color: var(--primary) !important;
+  box-shadow: 4px 4px 0 color-mix(in srgb, var(--border) 14%, transparent) !important;
+}
+
+.btn-secondary:hover {
+  background: color-mix(in srgb, var(--primary) 18%, var(--surface-hover)) !important;
+  color: var(--primary) !important;
+  border-color: color-mix(in srgb, var(--primary) 48%, var(--border)) !important;
+}
+
+.btn-ghost {
+  background: transparent !important;
+  color: color-mix(in srgb, var(--foreground) 78%, transparent) !important;
+  box-shadow: none !important;
+}
+
+.btn-ghost:hover {
+  background: color-mix(in srgb, var(--primary) 12%, var(--surface)) !important;
+  color: var(--primary) !important;
+}
+
+.btn:not(.btn-danger):not(.btn-success):not(.btn-warning):not(.btn-stripe):not(.btn-airwallex):not(.btn-baonuo):not(.btn-alipay):not(.btn-wxpay):disabled {
+  background: color-mix(in srgb, var(--surface-muted) 82%, transparent) !important;
+  background-image: none !important;
+  border-color: color-mix(in srgb, var(--border) 22%, transparent) !important;
+  color: var(--text-subtle) !important;
+  box-shadow: none !important;
+}
+
+.input,
+input,
+textarea,
+select {
+  border-radius: 0 !important;
+  font-family: var(--font-sans-public);
+}
+
+.input,
+input,
+textarea,
+select {
+  border-color: color-mix(in srgb, var(--border) 38%, transparent) !important;
+  background: var(--input) !important;
+  color: var(--foreground) !important;
+}
+
+.input:focus,
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--primary) !important;
+  --tw-ring-color: color-mix(in srgb, var(--primary) 30%, transparent) !important;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 22%, transparent) !important;
+}
+
+.card,
+.card-glass,
+.glass-card {
+  border-radius: 0 !important;
+  border-color: color-mix(in srgb, var(--border) 28%, transparent) !important;
+  box-shadow: 5px 5px 0 color-mix(in srgb, var(--border) 12%, transparent) !important;
+}
+
+.modal-content,
+.sidebar-link,
+.sidebar-link-active,
+.sidebar-logo {
+  border-radius: 0 !important;
+}
+
+.modal-content {
+  border-color: color-mix(in srgb, var(--border) 34%, transparent) !important;
+  box-shadow: 7px 7px 0 color-mix(in srgb, var(--border) 16%, transparent) !important;
+}
+
+.sidebar-link {
+  font-family: var(--font-sans-public);
+  color: color-mix(in srgb, var(--foreground) 76%, transparent) !important;
+}
+
+.sidebar-link:hover,
+.sidebar-link-active {
+  background-color: color-mix(in srgb, var(--primary) 13%, var(--surface)) !important;
+  color: var(--primary) !important;
+  outline: 1px solid color-mix(in srgb, var(--primary) 48%, transparent);
+  outline-offset: -1px;
+}
+
+.sidebar-link-active {
+  box-shadow: inset 3px 0 0 var(--primary);
+}
+
+.sidebar-link:hover svg,
+.sidebar-link-active svg {
+  color: var(--primary) !important;
+}
+
+.table-header,
+.table-scroll-container :is(thead, th),
+.table-wrapper :is(thead, th),
+.sticky-header-cell {
+  background-color: color-mix(in srgb, var(--primary) 7%, var(--surface)) !important;
+  color: color-mix(in srgb, var(--foreground) 82%, transparent) !important;
+  border-color: color-mix(in srgb, var(--primary) 22%, var(--border)) !important;
+}
+
+.table-body,
+.table-wrapper tbody,
+.table-scroll-container tbody {
+  background-color: var(--card) !important;
+}
+
+.table-wrapper tr:hover,
+.table-scroll-container tr:hover {
+  background-color: color-mix(in srgb, var(--primary) 7%, var(--surface)) !important;
+}
+
+.table-wrapper :is(th, td).sticky,
+.table-wrapper :is(th, td).sticky-header-cell,
+.table-scroll-container :is(th, td).sticky,
+.table-scroll-container :is(th, td).sticky-header-cell,
+.table-wrapper :is(th, td).left-0,
+.table-scroll-container :is(th, td).left-0,
+.table-wrapper .sticky-col,
+.table-scroll-container .sticky-col {
+  background-color: color-mix(in srgb, var(--primary) 6%, var(--surface)) !important;
+  color: color-mix(in srgb, var(--foreground) 84%, transparent) !important;
+  border-color: color-mix(in srgb, var(--primary) 20%, var(--border)) !important;
+}
+
+.table-wrapper tbody :is(th, td).sticky,
+.table-scroll-container tbody :is(th, td).sticky,
+.table-wrapper tbody :is(th, td).left-0,
+.table-scroll-container tbody :is(th, td).left-0,
+.table-wrapper tbody .sticky-col,
+.table-scroll-container tbody .sticky-col,
+.dark .table-wrapper tbody .sticky-col,
+.dark .table-scroll-container tbody .sticky-col {
+  background-color: color-mix(in srgb, var(--primary) 4%, var(--card)) !important;
+}
+
+.table-wrapper tbody tr:hover .sticky-col,
+.table-scroll-container tbody tr:hover .sticky-col,
+.dark .table-wrapper tbody tr:hover .sticky-col,
+.dark .table-scroll-container tbody tr:hover .sticky-col {
+  background-color: color-mix(in srgb, var(--primary) 9%, var(--surface)) !important;
+}
+
+.table-wrapper .sticky-header-cell.sticky-col,
+.table-scroll-container .sticky-header-cell.sticky-col,
+.dark .table-wrapper .sticky-header-cell.sticky-col,
+.dark .table-scroll-container .sticky-header-cell.sticky-col {
+  background-color: color-mix(in srgb, var(--primary) 8%, var(--surface)) !important;
+}
+
+.table-wrapper table tbody tr > :first-child,
+.table-scroll-container table tbody tr > :first-child,
+.table-page-layout table tbody tr > :first-child,
+.card table tbody tr > :first-child,
+.dark .table-wrapper table tbody tr > :first-child,
+.dark .table-scroll-container table tbody tr > :first-child,
+.dark .table-page-layout table tbody tr > :first-child,
+.dark .card table tbody tr > :first-child {
+  background-color: color-mix(in srgb, var(--primary) 4%, var(--card)) !important;
+  border-color: color-mix(in srgb, var(--primary) 20%, var(--border)) !important;
+}
+
+.table-wrapper table tbody tr:hover > :first-child,
+.table-scroll-container table tbody tr:hover > :first-child,
+.table-page-layout table tbody tr:hover > :first-child,
+.card table tbody tr:hover > :first-child,
+.dark .table-wrapper table tbody tr:hover > :first-child,
+.dark .table-scroll-container table tbody tr:hover > :first-child,
+.dark .table-page-layout table tbody tr:hover > :first-child,
+.dark .card table tbody tr:hover > :first-child {
+  background-color: color-mix(in srgb, var(--primary) 9%, var(--surface)) !important;
+}
+
+.table-wrapper table thead tr > :first-child,
+.table-scroll-container table thead tr > :first-child,
+.table-page-layout table thead tr > :first-child,
+.card table thead tr > :first-child,
+.dark .table-wrapper table thead tr > :first-child,
+.dark .table-scroll-container table thead tr > :first-child,
+.dark .table-page-layout table thead tr > :first-child,
+.dark .card table thead tr > :first-child {
+  background-color: color-mix(in srgb, var(--primary) 9%, var(--surface)) !important;
+  border-color: color-mix(in srgb, var(--primary) 24%, var(--border)) !important;
+}
+
+.table-wrapper.is-scrollable .sticky-col-left::after,
+.table-wrapper.is-scrollable .sticky-col-left-second::after,
+.table-scroll-container .is-scrollable .sticky-col-left::after,
+.table-scroll-container .is-scrollable .sticky-col-left-second::after,
+.dark .table-wrapper.is-scrollable .sticky-col-left::after,
+.dark .table-wrapper.is-scrollable .sticky-col-left-second::after,
+.dark .table-scroll-container .is-scrollable .sticky-col-left::after,
+.dark .table-scroll-container .is-scrollable .sticky-col-left-second::after {
+  background: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--primary) 22%, transparent),
+    transparent
+  ) !important;
+}
+
+.table-wrapper.is-scrollable .sticky-col-right::before,
+.table-scroll-container .is-scrollable .sticky-col-right::before,
+.dark .table-wrapper.is-scrollable .sticky-col-right::before,
+.dark .table-scroll-container .is-scrollable .sticky-col-right::before {
+  background: linear-gradient(
+    to left,
+    color-mix(in srgb, var(--primary) 20%, transparent),
+    transparent
+  ) !important;
+}
+
+[data-testid="profile-shell"] [data-testid="profile-overview-hero"],
+[data-testid="profile-shell"] [data-testid="profile-basics-panel"],
+[data-testid="profile-shell"] [data-testid="profile-auth-bindings-panel"],
+[data-testid="profile-shell"] [data-testid="profile-side-column"] > section,
+[data-testid="profile-shell"] > .card {
+  background: var(--card) !important;
+  background-image: none !important;
+}
+
+[data-testid="profile-shell"] [data-testid="profile-overview-hero"] [class*="bg-gradient"],
+[data-testid="profile-shell"] [data-testid="profile-avatar-preview"] {
+  background-image: none !important;
+}
+
+[data-testid="profile-shell"] [data-testid="profile-overview-hero"] > div > div > div:first-child,
+[data-testid="profile-shell"] div:has(> [data-testid="profile-avatar-preview"]),
+[data-testid="profile-shell"] [data-testid="profile-basics-panel"] .grid > div:first-child > div > div:first-child > div:first-child,
+[data-testid="profile-shell"] [data-testid="profile-avatar-preview"],
+[data-testid="profile-shell"] [data-testid="profile-avatar-preview"] img,
+[data-testid="profile-shell"] [data-testid="profile-avatar-file-input"] {
+  border-radius: 0 !important;
+}
+
+[data-testid="profile-shell"] [data-testid="profile-overview-hero"] > div > div > div:first-child,
+[data-testid="profile-shell"] div:has(> [data-testid="profile-avatar-preview"]),
+[data-testid="profile-shell"] [data-testid="profile-basics-panel"] .grid > div:first-child > div > div:first-child > div:first-child,
+[data-testid="profile-shell"] [data-testid="profile-avatar-preview"] {
+  background: var(--primary) !important;
+  background-image: none !important;
+  box-shadow: 6px 6px 0 color-mix(in srgb, var(--primary) 18%, transparent) !important;
+}
+
+[data-testid="profile-shell"] [data-testid^="profile-overview-metric"],
+[data-testid="profile-shell"] [data-testid="profile-basics-panel"] .grid > div,
+[data-testid="profile-shell"] [data-testid="profile-side-column"] [class*="bg-gray-50"] {
+  background: var(--surface) !important;
+  background-image: none !important;
+}
+
+[data-testid="profile-shell"] .card,
+[data-testid="profile-shell"] section,
+[data-testid="profile-shell"] [class*="border-"],
+[data-testid="profile-shell"] [class*="ring-"],
+[data-testid="profile-shell"] .input {
+  border-color: color-mix(in srgb, var(--border) 34%, transparent) !important;
+  --tw-ring-color: color-mix(in srgb, var(--border) 22%, transparent) !important;
+}
+
+[data-testid="profile-shell"] [data-testid^="profile-overview-metric"],
+[data-testid="profile-shell"] [data-testid="profile-basics-panel"] .grid > div,
+[data-testid="profile-shell"] [data-testid="profile-auth-bindings-panel"] [class*="border-"],
+[data-testid="profile-shell"] [data-testid="profile-side-column"] [class*="border-"] {
+  border-color: color-mix(in srgb, var(--border) 30%, transparent) !important;
+  --tw-ring-color: color-mix(in srgb, var(--border) 20%, transparent) !important;
+}
+
+[data-testid="profile-shell"] .input,
+[data-testid="profile-shell"] input,
+[data-testid="profile-shell"] textarea {
+  background: var(--input) !important;
+  border-color: color-mix(in srgb, var(--border) 42%, transparent) !important;
+  color: var(--foreground) !important;
+  box-shadow: none !important;
+}
+
+[data-testid="profile-shell"] .input:focus,
+[data-testid="profile-shell"] input:focus,
+[data-testid="profile-shell"] textarea:focus {
+  border-color: var(--primary) !important;
+  --tw-ring-color: color-mix(in srgb, var(--primary) 30%, transparent) !important;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 24%, transparent) !important;
+}
+
+[data-testid="profile-shell"] .btn {
+  border-color: color-mix(in srgb, var(--primary) 42%, var(--border)) !important;
+  background-image: none !important;
+  box-shadow: 5px 5px 0 color-mix(in srgb, var(--border) 16%, transparent) !important;
+}
+
+[data-testid="profile-shell"] .btn-primary {
+  background: var(--primary) !important;
+  color: var(--primary-foreground) !important;
+}
+
+[data-testid="profile-shell"] .btn-primary:hover {
+  background: color-mix(in srgb, var(--primary) 86%, var(--foreground)) !important;
+}
+
+[data-testid="profile-shell"] .btn-secondary {
+  background: color-mix(in srgb, var(--primary) 12%, var(--surface)) !important;
+  color: var(--primary) !important;
+  border-color: color-mix(in srgb, var(--primary) 44%, var(--border)) !important;
+}
+
+[data-testid="profile-shell"] .btn-secondary:hover {
+  background: color-mix(in srgb, var(--primary) 18%, var(--surface-hover)) !important;
+  color: var(--primary) !important;
+}
+
+[data-testid="profile-shell"] .btn:disabled {
+  background: color-mix(in srgb, var(--surface-muted) 82%, transparent) !important;
+  border-color: color-mix(in srgb, var(--border) 22%, transparent) !important;
+  color: var(--text-subtle) !important;
+  box-shadow: none !important;
+}
+
+.date-picker-trigger,
+.date-picker-dropdown,
+.date-picker-preset,
+.date-picker-input,
+.date-picker-apply,
+.select-trigger,
+.select-dropdown,
+.select-dropdown-portal,
+.select-search,
+.select-search-input,
+.select-options,
+.select-option,
+.select-option-group,
+.select-empty,
+.badge,
+[class*="badge-"],
+.dropdown,
+.dropdown-item,
+[class*="dropdown"] {
+  border-radius: 0 !important;
+}
+
+.date-picker-trigger,
+.select-trigger {
+  border-color: color-mix(in srgb, var(--border) 38%, transparent) !important;
+  background: var(--input) !important;
+}
+
+.date-picker-trigger-open,
+.select-trigger-open {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ring) 22%, transparent) !important;
+}
+
+.date-picker-dropdown,
+.select-dropdown,
+.select-dropdown-portal,
+.dropdown {
+  border: 1px solid color-mix(in srgb, var(--border) 34%, transparent) !important;
+  background: var(--card) !important;
+  box-shadow: 5px 5px 0 color-mix(in srgb, var(--border) 16%, transparent) !important;
+}
+
+.badge,
+[class*="badge-"] {
+  font-family: var(--font-mono-public);
+  letter-spacing: 0.02em;
+}
+
+.public-grid-bg {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(var(--public-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--public-grid) 1px, transparent 1px);
+  background-size: 34px 34px;
+  mask-image: linear-gradient(to bottom, black, transparent 82%);
+}
+
+.public-auth-shell,
+.public-home-shell {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 78% 18%, color-mix(in srgb, var(--accent) 20%, transparent), transparent 28rem),
+    radial-gradient(circle at 12% 86%, color-mix(in srgb, var(--primary) 18%, transparent), transparent 24rem),
+    var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans-public);
+}
+
+.public-auth-header,
+.public-home-header {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem clamp(1rem, 3vw, 2rem);
+}
+
+.public-brand-link,
+.public-home-brand {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  gap: 0.75rem;
+  color: inherit;
+  text-decoration: none;
+}
+
+.public-brand-mark {
+  display: inline-flex;
+  height: 2.5rem;
+  width: 2.5rem;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  background: var(--card);
+  box-shadow: 3px 3px 0 color-mix(in srgb, var(--border) 18%, transparent);
+}
+
+.public-brand-mark img {
+  height: 100%;
+  width: 100%;
+  object-fit: contain;
+}
+
+.public-brand-copy {
+  display: grid;
+  min-width: 0;
+}
+
+.public-brand-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.public-brand-subtitle {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.72rem;
+  color: color-mix(in srgb, var(--foreground) 66%, transparent);
+}
+
+.public-auth-actions,
+.public-home-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.public-auth-main {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  min-height: calc(100vh - 4.5rem);
+  grid-template-columns: minmax(0, 1fr) minmax(22rem, 31rem);
+  align-items: center;
+  gap: clamp(2rem, 7vw, 6rem);
+  padding: clamp(1rem, 4vw, 4rem);
+}
+
+.public-auth-aside {
+  max-width: 46rem;
+}
+
+.public-kicker {
+  display: inline-flex;
+  border: 1px solid var(--border);
+  background: var(--card);
+  padding: 0.35rem 0.55rem;
+  font-family: var(--font-mono-public);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.public-auth-aside h1 {
+  margin-top: 1rem;
+  max-width: 10ch;
+  font-size: clamp(3.2rem, 9vw, 7.5rem);
+  font-weight: 800;
+  line-height: 0.9;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.public-auth-aside p {
+  margin-top: 1.25rem;
+  max-width: 38rem;
+  font-size: clamp(1rem, 2vw, 1.35rem);
+  color: color-mix(in srgb, var(--foreground) 76%, transparent);
+}
+
+.public-metric-grid {
+  margin-top: 2rem;
+  display: grid;
+  max-width: 32rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border: 1px solid var(--border);
+  background: var(--card);
+  box-shadow: var(--public-shadow);
+}
+
+.public-metric-grid div {
+  display: grid;
+  gap: 0.25rem;
+  padding: 1rem;
+}
+
+.public-metric-grid div + div {
+  border-left: 1px solid var(--border);
+}
+
+.public-metric-grid span {
+  font-family: var(--font-mono-public);
+  font-size: 0.65rem;
+  color: color-mix(in srgb, var(--foreground) 62%, transparent);
+}
+
+.public-metric-grid strong {
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.public-auth-panel {
+  width: 100%;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--card) 92%, transparent);
+  padding: clamp(1.25rem, 3vw, 2rem);
+  box-shadow: var(--public-shadow);
+}
+
+.public-auth-panel h2 {
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.public-auth-panel .space-y-6 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-y-reverse: 0;
+  margin-top: calc(1.25rem * calc(1 - var(--tw-space-y-reverse)));
+  margin-bottom: calc(1.25rem * var(--tw-space-y-reverse));
+}
+
+.public-auth-panel .input-label {
+  font-family: var(--font-mono-public);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.public-auth-panel .input {
+  min-height: 2.8rem;
+  border-width: 1px;
+}
+
+.public-auth-panel .btn {
+  min-height: 2.85rem;
+  text-transform: uppercase;
+}
+
+.public-auth-panel a {
+  color: var(--primary);
+}
+
+.public-auth-footer {
+  margin-top: 1.5rem;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 900px) {
+  .public-auth-shell {
+    overflow: auto;
+  }
+
+  .public-auth-main {
+    grid-template-columns: 1fr;
+    padding-top: 1rem;
+  }
+
+  .public-auth-aside {
+    display: none;
+  }
+}
+
+@media (max-width: 520px) {
+  .public-brand-subtitle {
+    display: none;
+  }
+
+  .public-auth-header,
+  .public-home-header {
+    padding-inline: 0.875rem;
+  }
+
+  .public-auth-main {
+    padding-inline: 0.875rem;
+  }
+}

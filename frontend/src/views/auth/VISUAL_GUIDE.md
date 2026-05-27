@@ -12,7 +12,7 @@ Both LoginView and RegisterView use the AuthLayout component, which provides:
 │  ┌─────────────────────────────────────┐   │
 │  │                                     │   │
 │  │         Sub2API Logo                │   │
-│  │  "Subscription to API Conversion"   │   │
+│  │  "Metered OpenAI API access"        │   │
 │  │                                     │   │
 │  └─────────────────────────────────────┘   │
 │                                             │
@@ -40,7 +40,7 @@ Centered: Both horizontally and vertically
 ┌─────────────────────────────────────────────┐
 │                                             │
 │         🔷 Sub2API                          │
-│    Subscription to API Conversion Platform  │
+│    Metered OpenAI API access                │
 │                                             │
 │  ┌─────────────────────────────────────┐   │
 │  │                                     │   │
@@ -134,7 +134,7 @@ Centered: Both horizontally and vertically
 ┌─────────────────────────────────────────────┐
 │                                             │
 │         🔷 Sub2API                          │
-│    Subscription to API Conversion Platform  │
+│    Metered OpenAI API access                │
 │                                             │
 │  ┌─────────────────────────────────────┐   │
 │  │                                     │   │
