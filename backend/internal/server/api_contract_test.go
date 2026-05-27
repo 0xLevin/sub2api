@@ -1012,7 +1012,7 @@ func TestAPIContracts(t *testing.T) {
 					"google_oauth_frontend_redirect_url": "/auth/oauth/callback",
 					"site_name": "Sub2API",
 					"site_logo": "",
-					"site_subtitle": "Subscription to API Conversion Platform",
+					"site_subtitle": "Metered OpenAI API access with transparent balance",
 					"api_base_url": "",
 					"contact_info": "",
 					"doc_url": "",

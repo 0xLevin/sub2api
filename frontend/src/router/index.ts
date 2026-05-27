@@ -32,7 +32,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/home',
     name: 'Home',
-    component: () => import('@/views/HomeView.vue'),
+    component: () => import('@/views/public-v2/HomeViewV2.vue'),
     meta: {
       requiresAuth: false,
       title: 'Home'
@@ -41,7 +41,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/login',
     name: 'Login',
-    component: () => import('@/views/auth/LoginView.vue'),
+    component: () => import('@/views/public-v2/LoginViewV2.vue'),
     meta: {
       requiresAuth: false,
       title: 'Login',
@@ -51,7 +51,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/register',
     name: 'Register',
-    component: () => import('@/views/auth/RegisterView.vue'),
+    component: () => import('@/views/public-v2/RegisterViewV2.vue'),
     meta: {
       requiresAuth: false,
       title: 'Register',
@@ -140,7 +140,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/forgot-password',
     name: 'ForgotPassword',
-    component: () => import('@/views/auth/ForgotPasswordView.vue'),
+    component: () => import('@/views/public-v2/ForgotPasswordViewV2.vue'),
     meta: {
       requiresAuth: false,
       title: 'Forgot Password',
