@@ -1,3 +1,5 @@
+//go:build unit
+
 package service
 
 import (
@@ -98,5 +100,25 @@ func TestCompareVersions_IgnoresCustomSuffix(t *testing.T) {
 		if got := compareVersions(tc.current, tc.latest); got != tc.want {
 			t.Fatalf("compareVersions(%q, %q) = %d, want %d", tc.current, tc.latest, got, tc.want)
 		}
+	}
+}
+
+func TestUpdateServicePerformUpdateNoUpdateReturnsSentinel(t *testing.T) {
+	svc := NewUpdateService(
+		&updateTestCache{},
+		updateTestGitHubClient{
+			release: &GitHubRelease{
+				TagName: "v0.1.132",
+				Name:    "v0.1.132",
+			},
+		},
+		"0.1.132",
+		"release",
+	)
+
+	err := svc.PerformUpdate(context.Background())
+
+	if !errors.Is(err, ErrNoUpdateAvailable) {
+		t.Fatalf("expected ErrNoUpdateAvailable, got %v", err)
 	}
 }
