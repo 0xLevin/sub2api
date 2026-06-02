@@ -3502,9 +3502,7 @@ export default {
         gemini3Image: 'G31FI',
         claude: 'Claude',
         passiveSampled: '被动采样',
-        activeQuery: '查询',
-        usageLimitShort: '限',
-        usageLimitTitle: '达到该已用百分比阈值后跳过新调度，粘性会话仍允许。'
+        activeQuery: '查询'
       },
       tier: {
         free: 'Free',
@@ -3811,14 +3809,6 @@ export default {
           stickyReserve: '粘性预留额度',
           stickyReservePlaceholder: '10',
           stickyReserveHint: '为粘性会话预留的额外额度'
-        },
-        usagePercent: {
-          label: '用量百分比限制',
-          hint: '基于用量窗口的已用百分比限制新调度，达到阈值后仅允许粘性会话',
-          limit5h: '5h 已用阈值',
-          limit7d: '7d 已用阈值',
-          placeholder: '80',
-          staleHint: '用量来自被动采样；超过 6 小时未更新的旧值不会用于阻断调度。'
         },
         sessionLimit: {
           label: '会话数量控制',

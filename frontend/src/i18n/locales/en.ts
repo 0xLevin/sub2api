@@ -3672,14 +3672,6 @@ export default {
           stickyReservePlaceholder: '10',
           stickyReserveHint: 'Additional reserve for sticky sessions'
         },
-        usagePercent: {
-          label: 'Usage Percent Limit',
-          hint: 'Limit new scheduling based on used percentage from usage windows; sticky sessions remain allowed after threshold',
-          limit5h: '5h Used Threshold',
-          limit7d: '7d Used Threshold',
-          placeholder: '80',
-          staleHint: 'Usage is passively sampled; values older than 6 hours will not block scheduling.'
-        },
         sessionLimit: {
           label: 'Session Count Limit',
           hint: 'Limit the number of active concurrent sessions',
@@ -4237,9 +4229,7 @@ export default {
         gemini3Image: 'G31FI',
         claude: 'Claude',
         passiveSampled: 'Passive',
-        activeQuery: 'Query',
-        usageLimitShort: 'limit',
-        usageLimitTitle: 'New scheduling is skipped at this used-percent threshold; sticky sessions remain allowed.'
+        activeQuery: 'Query'
       },
       tier: {
         free: 'Free',

@@ -284,12 +284,6 @@ func (s *defaultOpenAIAccountScheduler) Select(
 				selection = nil
 			}
 		}
-		if selection != nil && selection.Account != nil && !s.service.isOpenAIAccountSchedulableForUsagePercent(selection.Account, true) {
-			if selection.ReleaseFunc != nil {
-				selection.ReleaseFunc()
-			}
-			selection = nil
-		}
 		if selection != nil && selection.Account != nil {
 			decision.Layer = openAIAccountScheduleLayerPreviousResponse
 			decision.StickyPreviousHit = true
@@ -376,11 +370,6 @@ func (s *defaultOpenAIAccountScheduler) selectBySessionHash(
 		_ = s.service.deleteStickySessionAccountID(ctx, req.GroupID, sessionHash)
 		return nil, nil
 	}
-	if !s.service.isOpenAIAccountSchedulableForUsagePercent(account, true) {
-		_ = s.service.deleteStickySessionAccountID(ctx, req.GroupID, sessionHash)
-		return nil, nil
-	}
-
 	result, acquireErr := s.service.tryAcquireAccountSlot(ctx, accountID, account.Concurrency)
 	if acquireErr == nil && result != nil && result.Acquired {
 		_ = s.service.refreshStickySessionTTL(ctx, req.GroupID, sessionHash, s.service.openAIWSSessionStickyTTL())
@@ -811,9 +800,6 @@ func (s *defaultOpenAIAccountScheduler) tryAcquireOpenAISelectionOrder(
 		if fresh == nil || !s.isAccountTransportCompatible(fresh, req.RequiredTransport) || !s.isAccountRequestCompatible(ctx, fresh, req) {
 			continue
 		}
-		if !s.service.isOpenAIAccountSchedulableForUsagePercent(fresh, false) {
-			continue
-		}
 		if req.RequireCompact && openAICompactSupportTier(fresh) == 0 {
 			compactBlocked = true
 			continue
@@ -880,9 +866,6 @@ func (s *defaultOpenAIAccountScheduler) selectByLoadBalance(
 			continue
 		}
 		if !s.isAccountTransportCompatible(account, req.RequiredTransport) {
-			continue
-		}
-		if !s.service.isOpenAIAccountSchedulableForUsagePercent(account, false) {
 			continue
 		}
 		filtered = append(filtered, account)
@@ -954,9 +937,6 @@ func (s *defaultOpenAIAccountScheduler) selectByLoadBalance(
 		}
 		fresh = s.service.recheckSelectedOpenAIAccountFromDB(ctx, fresh, req.RequestedModel, false, req.RequiredCapability)
 		if fresh == nil || !s.isAccountTransportCompatible(fresh, req.RequiredTransport) || !s.isAccountRequestCompatible(ctx, fresh, req) {
-			continue
-		}
-		if !s.service.isOpenAIAccountSchedulableForUsagePercent(fresh, false) {
 			continue
 		}
 		if req.RequireCompact && openAICompactSupportTier(fresh) == 0 {

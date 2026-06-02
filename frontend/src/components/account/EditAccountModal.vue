@@ -1863,42 +1863,6 @@
           />
           <p class="input-hint">{{ t('admin.accounts.autoPauseThresholdHint') }}</p>
         </div>
-        <div v-if="account?.type === 'oauth'" class="rounded-lg border border-gray-200 p-4 dark:border-dark-600">
-          <div class="mb-3 flex items-center justify-between">
-            <div>
-              <label class="input-label mb-0">{{ t('admin.accounts.quotaControl.usagePercent.label') }}</label>
-              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                {{ t('admin.accounts.quotaControl.usagePercent.hint') }}
-              </p>
-            </div>
-            <button
-              type="button"
-              @click="usagePercentLimitEnabled = !usagePercentLimitEnabled"
-              :class="[
-                'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
-                usagePercentLimitEnabled ? 'bg-primary-600' : 'bg-gray-200 dark:bg-dark-600'
-              ]"
-            >
-              <span
-                :class="[
-                  'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
-                  usagePercentLimitEnabled ? 'translate-x-5' : 'translate-x-0'
-                ]"
-              />
-            </button>
-          </div>
-          <div v-if="usagePercentLimitEnabled" class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="input-label">{{ t('admin.accounts.quotaControl.usagePercent.limit5h') }}</label>
-              <input v-model.number="usagePercentLimit5h" type="number" min="0" max="100" step="1" class="input" :placeholder="t('admin.accounts.quotaControl.usagePercent.placeholder')" />
-            </div>
-            <div>
-              <label class="input-label">{{ t('admin.accounts.quotaControl.usagePercent.limit7d') }}</label>
-              <input v-model.number="usagePercentLimit7d" type="number" min="0" max="100" step="1" class="input" :placeholder="t('admin.accounts.quotaControl.usagePercent.placeholder')" />
-            </div>
-          </div>
-          <p v-if="usagePercentLimitEnabled" class="input-hint mt-2">{{ t('admin.accounts.quotaControl.usagePercent.staleHint') }}</p>
-        </div>
       </div>
 
       <!-- 配额控制 (Anthropic OAuth/SetupToken: 亲和 + 窗口费用 + 会话 + RPM 等) -->
@@ -1911,44 +1875,6 @@
           <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
             {{ t('admin.accounts.quotaControl.hint') }}
           </p>
-        </div>
-
-        <!-- Usage Percent Limit -->
-        <div class="rounded-lg border border-gray-200 p-4 dark:border-dark-600">
-          <div class="mb-3 flex items-center justify-between">
-            <div>
-              <label class="input-label mb-0">{{ t('admin.accounts.quotaControl.usagePercent.label') }}</label>
-              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                {{ t('admin.accounts.quotaControl.usagePercent.hint') }}
-              </p>
-            </div>
-            <button
-              type="button"
-              @click="usagePercentLimitEnabled = !usagePercentLimitEnabled"
-              :class="[
-                'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
-                usagePercentLimitEnabled ? 'bg-primary-600' : 'bg-gray-200 dark:bg-dark-600'
-              ]"
-            >
-              <span
-                :class="[
-                  'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
-                  usagePercentLimitEnabled ? 'translate-x-5' : 'translate-x-0'
-                ]"
-              />
-            </button>
-          </div>
-          <div v-if="usagePercentLimitEnabled" class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="input-label">{{ t('admin.accounts.quotaControl.usagePercent.limit5h') }}</label>
-              <input v-model.number="usagePercentLimit5h" type="number" min="0" max="100" step="1" class="input" :placeholder="t('admin.accounts.quotaControl.usagePercent.placeholder')" />
-            </div>
-            <div>
-              <label class="input-label">{{ t('admin.accounts.quotaControl.usagePercent.limit7d') }}</label>
-              <input v-model.number="usagePercentLimit7d" type="number" min="0" max="100" step="1" class="input" :placeholder="t('admin.accounts.quotaControl.usagePercent.placeholder')" />
-            </div>
-          </div>
-          <p v-if="usagePercentLimitEnabled" class="input-hint mt-2">{{ t('admin.accounts.quotaControl.usagePercent.staleHint') }}</p>
         </div>
 
         <!-- Window Cost Limit -->
@@ -2628,9 +2554,6 @@ const antigravityMixedChannelConfirmed = ref(false)
 const windowCostEnabled = ref(false)
 const windowCostLimit = ref<number | null>(null)
 const windowCostStickyReserve = ref<number | null>(null)
-const usagePercentLimitEnabled = ref(false)
-const usagePercentLimit5h = ref<number | null>(null)
-const usagePercentLimit7d = ref<number | null>(null)
 const sessionLimitEnabled = ref(false)
 const maxSessions = ref<number | null>(null)
 const sessionIdleTimeout = ref<number | null>(null)
@@ -3517,9 +3440,6 @@ function loadQuotaControlSettings(account: Account) {
   windowCostEnabled.value = false
   windowCostLimit.value = null
   windowCostStickyReserve.value = null
-  usagePercentLimitEnabled.value = false
-  usagePercentLimit5h.value = null
-  usagePercentLimit7d.value = null
   sessionLimitEnabled.value = false
   maxSessions.value = null
   sessionIdleTimeout.value = null
@@ -3536,18 +3456,6 @@ function loadQuotaControlSettings(account: Account) {
   customBaseUrlEnabled.value = false
   customBaseUrl.value = ''
 
-  if (
-    (account.platform === 'openai' && account.type === 'oauth') ||
-    (account.platform === 'anthropic' && (account.type === 'oauth' || account.type === 'setup-token'))
-  ) {
-    const limit5h = account.usage_percent_limit_5h ?? null
-    const limit7d = account.usage_percent_limit_7d ?? null
-    if ((limit5h != null && limit5h > 0) || (limit7d != null && limit7d > 0)) {
-      usagePercentLimitEnabled.value = true
-      usagePercentLimit5h.value = limit5h
-      usagePercentLimit7d.value = limit7d
-    }
-  }
 
   // Remaining quota control settings only apply to Anthropic accounts
   if (account.platform !== 'anthropic') {
@@ -3607,25 +3515,6 @@ function loadQuotaControlSettings(account: Account) {
   }
 }
 
-const applyUsagePercentLimitExtra = (extra: Record<string, unknown>) => {
-  if (usagePercentLimitEnabled.value) {
-    const limit5h = usagePercentLimit5h.value
-    const limit7d = usagePercentLimit7d.value
-    if (limit5h != null && limit5h > 0) {
-      extra.usage_percent_limit_5h = Math.min(Math.max(limit5h, 0), 100)
-    } else {
-      delete extra.usage_percent_limit_5h
-    }
-    if (limit7d != null && limit7d > 0) {
-      extra.usage_percent_limit_7d = Math.min(Math.max(limit7d, 0), 100)
-    } else {
-      delete extra.usage_percent_limit_7d
-    }
-  } else {
-    delete extra.usage_percent_limit_5h
-    delete extra.usage_percent_limit_7d
-  }
-}
 
 function formatTempUnschedKeywords(value: unknown) {
   if (Array.isArray(value)) {
@@ -4082,7 +3971,6 @@ const handleSubmit = async () => {
     if (props.account.platform === 'anthropic' && (props.account.type === 'oauth' || props.account.type === 'setup-token')) {
       const currentExtra = (updatePayload.extra as Record<string, unknown>) || (props.account.extra as Record<string, unknown>) || {}
       const newExtra: Record<string, unknown> = { ...currentExtra }
-      applyUsagePercentLimitExtra(newExtra)
 
       // Window cost limit settings
       if (windowCostEnabled.value && windowCostLimit.value != null && windowCostLimit.value > 0) {
@@ -4261,9 +4149,6 @@ const handleSubmit = async () => {
         } else {
           delete newExtra.codex_cli_only_allowed_clients
         }
-      }
-      if (props.account.type === 'oauth') {
-        applyUsagePercentLimitExtra(newExtra)
       }
 
       updatePayload.extra = newExtra
