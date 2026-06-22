@@ -1,0 +1,7 @@
+interface:
+  display_name: "Sub2API Upstream Merge"
+  short_description: "Merge upstream Sub2API releases into product-edition"
+  default_prompt: "Use $sub2api-upstream-merge to merge an upstream Wei-Shaw/sub2api release tag into this project safely."
+
+policy:
+  allow_implicit_invocation: true
