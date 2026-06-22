@@ -4,8 +4,13 @@ const { spawnSync } = require("node:child_process");
 const fs = require("node:fs");
 const path = require("node:path");
 
-const EXPECTED_ROOT = "/home/ubuntu/dev/sub2api";
-const EXPECTED_BRANCH = "product-edition";
+const LOCAL_ROOT = "/home/ubuntu/dev/sub2api";
+const EXPECTED_ROOT = process.env.SUB2API_MERGE_EXPECTED_ROOT
+  ? path.resolve(process.env.SUB2API_MERGE_EXPECTED_ROOT)
+  : process.env.GITHUB_ACTIONS === "true"
+    ? path.resolve(process.env.GITHUB_WORKSPACE || process.cwd())
+    : LOCAL_ROOT;
+const EXPECTED_BRANCH = process.env.SUB2API_MERGE_EXPECTED_BRANCH || "product-edition";
 const VERSION_FILE = "backend/cmd/server/VERSION";
 const CRITICAL_VITEST = [
   "src/views/auth/__tests__/LinuxDoCallbackView.spec.ts",
@@ -94,7 +99,7 @@ function main() {
   assertCleanTree();
 
   if (push) {
-    run("git", ["push", "origin", EXPECTED_BRANCH]);
+    run("git", ["push", "origin", `HEAD:${EXPECTED_BRANCH}`]);
   }
 
   const head = run("git", ["rev-parse", "--short", "HEAD"], { capture: true });

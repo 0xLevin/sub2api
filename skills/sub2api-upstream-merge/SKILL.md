@@ -5,7 +5,7 @@ description: Merge upstream Wei-Shaw/sub2api release tags into this repository's
 
 # Sub2API Upstream Merge
 
-Use this skill only inside `/home/ubuntu/dev/sub2api`.
+Use this skill inside `/home/ubuntu/dev/sub2api`, or from GitHub Actions with `GITHUB_WORKSPACE`/`SUB2API_MERGE_EXPECTED_ROOT`.
 
 Prefer the bundled script over manual git commands:
 
@@ -41,3 +41,4 @@ node skills/sub2api-upstream-merge/scripts/merge-upstream-release.js v0.1.137 --
 - Upstream release tags can leave `backend/cmd/server/VERSION` at the previous version. Always let the script synchronize it to the requested tag.
 - The script intentionally does not run `golangci-lint`; this environment may not have it installed. Run it separately if available.
 - The frontend build writes to `backend/internal/web/dist`; the script verifies that build output does not leave tracked diffs.
+- In GitHub Actions, set `SUB2API_MERGE_EXPECTED_ROOT` to `${{ github.workspace }}` and check out `product-edition` before running the script.

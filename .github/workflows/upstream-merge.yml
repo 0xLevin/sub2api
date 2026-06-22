@@ -1,0 +1,121 @@
+name: Upstream Merge
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Upstream release tag to merge, for example v0.1.138. Leave empty to use the latest v* tag.'
+        required: false
+        type: string
+  schedule:
+    - cron: '17 18 * * *'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: upstream-merge-product-edition
+  cancel-in-progress: false
+
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout product-edition
+        uses: actions/checkout@v6
+        with:
+          ref: product-edition
+          fetch-depth: 0
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Configure upstream remote
+        run: |
+          git remote remove upstream 2>/dev/null || true
+          git remote add upstream https://github.com/Wei-Shaw/sub2api.git
+
+      - name: Resolve upstream tag
+        id: tag
+        shell: bash
+        run: |
+          set -euo pipefail
+          input_tag='${{ github.event.inputs.tag }}'
+          if [ -n "${input_tag}" ]; then
+            tag="${input_tag}"
+          else
+            tag="$(git ls-remote --tags --refs upstream 'v*' \
+              | awk '{print $2}' \
+              | sed 's#refs/tags/##' \
+              | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' \
+              | sort -V \
+              | tail -n 1)"
+          fi
+          if ! echo "${tag}" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "Invalid upstream tag: ${tag}" >&2
+            exit 2
+          fi
+          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
+          echo "Resolved upstream tag: ${tag}"
+
+      - name: Prepare branch and tag
+        run: |
+          git fetch origin product-edition
+          git checkout -B product-edition origin/product-edition
+          git fetch upstream tag '${{ steps.tag.outputs.tag }}'
+
+      - name: Check if merge is already applied
+        id: precheck
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag='${{ steps.tag.outputs.tag }}'
+          version="${tag#v}"
+          current_version="$(tr -d '\r\n' < backend/cmd/server/VERSION)"
+          if git merge-base --is-ancestor "${tag}" HEAD && [ "${current_version}" = "${version}" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "${tag} is already merged and VERSION is ${version}."
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Setup pnpm
+        if: steps.precheck.outputs.skip != 'true'
+        uses: pnpm/action-setup@v6
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        if: steps.precheck.outputs.skip != 'true'
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: Install frontend dependencies
+        if: steps.precheck.outputs.skip != 'true'
+        working-directory: frontend
+        run: pnpm install --frozen-lockfile
+
+      - name: Setup Go
+        if: steps.precheck.outputs.skip != 'true'
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: backend/go.mod
+          check-latest: false
+          cache: true
+          cache-dependency-path: backend/go.sum
+
+      - name: Verify Go version
+        if: steps.precheck.outputs.skip != 'true'
+        run: go version | grep -q 'go1.26.4'
+
+      - name: Merge upstream tag, validate, and push
+        if: steps.precheck.outputs.skip != 'true'
+        env:
+          SUB2API_MERGE_EXPECTED_ROOT: ${{ github.workspace }}
+          SUB2API_MERGE_EXPECTED_BRANCH: product-edition
+        run: node skills/sub2api-upstream-merge/scripts/merge-upstream-release.js '${{ steps.tag.outputs.tag }}' --push
