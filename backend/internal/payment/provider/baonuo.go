@@ -238,7 +238,7 @@ func (b *Baonuo) QueryOrder(ctx context.Context, tradeNo string) (*payment.Query
 		return nil, fmt.Errorf("baonuo query invalid signature")
 	}
 
-	status := payment.ProviderStatusPending
+	var status string
 	switch strings.ToLower(strings.TrimSpace(resp.Data.Status)) {
 	case baonuoStatusPaid:
 		status = payment.ProviderStatusPaid
