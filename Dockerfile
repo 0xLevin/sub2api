@@ -67,10 +67,10 @@ COPY backend/ ./
 COPY --from=frontend-builder /app/backend/internal/web/dist ./internal/web/dist
 
 # Build the binary (BuildType=release for CI builds, embed frontend)
-# Version precedence: build arg VERSION > cmd/server/VERSION
+# Version precedence: build arg VERSION > exact git tag > cmd/server/VERSION
 RUN VERSION_VALUE="${VERSION}" && \
     if [ -z "${VERSION_VALUE}" ]; then \
-      VERSION_VALUE="$(tr -d '\r\n' < ./cmd/server/VERSION)"; \
+      VERSION_VALUE="$(./scripts/resolve-version.sh)"; \
       FORK_VERSION_VALUE="$(tr -d '\r\n' < ./cmd/server/FORK_VERSION 2>/dev/null || true)"; \
       if [ -n "${FORK_VERSION_VALUE}" ]; then VERSION_VALUE="${VERSION_VALUE}-${FORK_VERSION_VALUE}"; fi; \
     fi && \
