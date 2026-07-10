@@ -111,7 +111,7 @@ jobs:
 
       - name: Verify Go version
         if: steps.precheck.outputs.skip != 'true'
-        run: go version | grep -q 'go1.26.4'
+        run: go version | grep -q 'go1.26.5'
 
       - name: Merge upstream tag, validate, and push
         if: steps.precheck.outputs.skip != 'true'
