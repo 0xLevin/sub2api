@@ -176,9 +176,10 @@ jobs:
 
             context_dir="${RUNNER_TEMP}/sub2api-image-${arch}"
             rm -rf "${context_dir}"
-            mkdir -p "${context_dir}/deploy"
+            mkdir -p "${context_dir}/deploy" "${context_dir}/backend"
             cp Dockerfile.goreleaser "${context_dir}/Dockerfile"
             cp deploy/docker-entrypoint.sh "${context_dir}/deploy/docker-entrypoint.sh"
+            cp -R backend/resources "${context_dir}/backend/resources"
 
             (
               cd backend
