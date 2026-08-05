@@ -19,12 +19,17 @@ func newAliyunCaptchaTestTarget(t *testing.T, handler http.HandlerFunc) (*aliyun
 	server := httptest.NewServer(handler)
 	t.Cleanup(server.Close)
 
+	endpoint := strings.TrimPrefix(server.URL, "http://")
+	// The AlibabaCloud tea SDK matches NO_PROXY against the exact host:port.
+	t.Setenv("NO_PROXY", endpoint)
+	t.Setenv("no_proxy", endpoint)
+
 	verifier := &aliyunCaptchaVerifier{protocol: "HTTP", timeoutMillis: 2_000}
 	cred := service.AliyunCaptchaCredentials{
 		AccessKeyID:     "test-ak-id",
 		AccessKeySecret: "test-ak-secret",
 		SceneID:         "scene-1",
-		Endpoint:        strings.TrimPrefix(server.URL, "http://"),
+		Endpoint:        endpoint,
 	}
 	return verifier, cred
 }
@@ -76,6 +81,8 @@ func TestAliyunCaptchaVerifier_APIErrorNormalized(t *testing.T) {
 func TestAliyunCaptchaVerifier_TransportError(t *testing.T) {
 	server := httptest.NewServer(http.NotFoundHandler())
 	endpoint := strings.TrimPrefix(server.URL, "http://")
+	t.Setenv("NO_PROXY", endpoint)
+	t.Setenv("no_proxy", endpoint)
 	server.Close() // 立即关闭，制造连接失败
 
 	verifier := &aliyunCaptchaVerifier{protocol: "HTTP", timeoutMillis: 2_000}
