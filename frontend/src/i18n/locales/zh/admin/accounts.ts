@@ -1585,6 +1585,14 @@ export default {
         todayTokens: '今日 Token',
         todayCost: '今日费用',
         usageTrend: '30天费用与请求趋势',
+        codexCapacity: 'Codex 周期产能',
+        codexCapacityReady: '可用于定价',
+        codexCapacitySampling: '采样中',
+        codexCapacityReadyNote: '基于已观察到的 7D 用量百分比增量估算。',
+        codexCapacitySamplingNote: '尚未观察到足够的 7D 用量增量。',
+        completeCycles: '估算样本',
+        complete7dTokens: '7D Token',
+        complete7dCost: '7D 成本',
         noData: '该账号暂无使用数据'
       }
     },

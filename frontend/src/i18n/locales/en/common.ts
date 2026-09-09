@@ -216,6 +216,23 @@ export default {
 
   // Auth
   auth: {
+    publicLayout: {
+      kicker: 'OPENAI API ACCESS',
+      metrics: {
+        api: {
+          label: 'API',
+          value: 'OpenAI'
+        },
+        auth: {
+          label: 'AUTH',
+          value: '2FA'
+        },
+        mode: {
+          label: 'STATUS',
+          value: 'LIVE'
+        }
+      }
+    },
     welcomeBack: 'Welcome Back',
     signInToAccount: 'Sign in to your account to continue',
     signIn: 'Sign In',
@@ -233,6 +250,10 @@ export default {
     dontHaveAccount: "Don't have an account?",
     alreadyHaveAccount: 'Already have an account?',
     registrationDisabled: 'Registration is currently disabled. Please contact the administrator.',
+    loginAgreementRejected: 'Accept the latest terms before entering credentials or using quick sign-in.',
+    loginAgreementRequired: 'Please read and accept the latest terms before signing in.',
+    registerAgreementRejected: 'Accept the latest terms before creating an account or using quick sign-in.',
+    registerAgreementRequired: 'Please read and accept the latest terms before creating an account.',
     emailLabel: 'Email',
     emailPlaceholder: 'Enter your email',
     passwordLabel: 'Password',

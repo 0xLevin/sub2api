@@ -216,6 +216,23 @@ export default {
 
   // Auth
   auth: {
+    publicLayout: {
+      kicker: 'OPENAI API 接入',
+      metrics: {
+        api: {
+          label: 'API',
+          value: 'OpenAI'
+        },
+        auth: {
+          label: '认证',
+          value: '2FA'
+        },
+        mode: {
+          label: '状态',
+          value: '在线'
+        }
+      }
+    },
     welcomeBack: '欢迎回来',
     signInToAccount: '登录您的账户以继续',
     signIn: '登录',
@@ -233,6 +250,10 @@ export default {
     dontHaveAccount: '还没有账户？',
     alreadyHaveAccount: '已有账户？',
     registrationDisabled: '注册功能暂时关闭，请联系管理员。',
+    loginAgreementRejected: '同意最新条款后才可以输入账号密码或使用快捷登录。',
+    loginAgreementRequired: '请先阅读并同意最新条款后再登录。',
+    registerAgreementRejected: '同意最新条款后才可以注册或使用快捷登录。',
+    registerAgreementRequired: '请先阅读并同意最新条款后再注册。',
     emailLabel: '邮箱',
     emailPlaceholder: '请输入邮箱',
     passwordLabel: '密码',

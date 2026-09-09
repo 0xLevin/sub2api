@@ -1527,6 +1527,14 @@ export default {
         todayTokens: 'Today Tokens',
         todayCost: 'Today Cost',
         usageTrend: '30-Day Cost & Request Trend',
+        codexCapacity: 'Codex Cycle Capacity',
+        codexCapacityReady: 'Ready for pricing',
+        codexCapacitySampling: 'Sampling',
+        codexCapacityReadyNote: 'Estimated from the observed 7D usage percent delta.',
+        codexCapacitySamplingNote: 'Not enough observed 7D usage delta yet.',
+        completeCycles: 'Estimated Samples',
+        complete7dTokens: '7D Tokens',
+        complete7dCost: '7D Cost',
         noData: 'No usage data available for this account'
       },
       usageWindow: {
